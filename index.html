@@ -3,56 +3,924 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community-Based Blood Donor Management System</title>
+    <title>City Blood Donor Management & Emergency Matching System</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Google Fonts for Clean Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Header / Navigation Bar -->
-    <header class="navbar">
-        <div class="logo-container">
-            <div class="logo-placeholder">+</div>
-            <div class="org-title">
-                <span class="city-name">City Health Office</span>
-                <span class="location">General Santos City</span>
+    <!-- 1. LOGIN SCREEN -->
+    <section id="loginViewSection" class="login-container">
+        <div class="login-card">
+            <div class="login-form-panel">
+                <div class="login-form-header">
+                    <span class="logo-icon-login">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2.5c3.2 4.4 7 9.2 7 13.2a7 7 0 1 1-14 0c0-4 3.8-8.8 7-13.2Z"/></svg>
+                    </span>
+                    <h3>Log in to Portal</h3>
+                    <p>City Health Office Blood Emergency System</p>
+                </div>
+
+                <form id="initialLoginForm">
+                    <div class="form-group">
+                        <label for="initialLoginRole">Select System Account Role</label>
+                        <select id="initialLoginRole" class="form-control" required>
+                            <option value="1">City Health Office Admin</option>
+                            <option value="2">Hospital Staff</option>
+                            <option value="3">Barangay Health Worker</option>
+                            <option value="4">Volunteer Blood Donor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="initialLoginUsername">Username</label>
+                        <div class="input-with-icon">
+                            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c1-4.2 3.8-6.5 7.5-6.5s6.5 2.3 7.5 6.5"/></svg>
+                            <input type="text" id="initialLoginUsername" class="form-control" required placeholder="Enter username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="initialLoginPassword">Password</label>
+                        <div class="input-with-icon">
+                            <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>
+                            <input type="password" id="initialLoginPassword" class="form-control" required placeholder="••••••••">
+                        </div>
+                    </div>
+                    <div class="btn-center-wrapper">
+                        <button type="submit" class="btn-submit">
+                            <svg class="icon" viewBox="0 0 24 24" width="16" height="16" stroke="white"><path d="M9 6.5 15 12l-6 5.5"/></svg>
+                            LOG IN TO PORTAL
+                        </button>
+                    </div>
+                </form>
+
+                <div style="text-align: center; margin-top: 18px;">
+                    <p class="text-muted">No account? <a href="#" id="linkOpenStaffRegister">Register New Account</a></p>
+                </div>
             </div>
         </div>
-        <nav class="nav-links">
-            <a href="#home">Home</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
-            <button class="btn-secondary" id="loginHeaderBtn">Login</button>
-        </nav>
-    </header>
+    </section>
 
-    <!-- Main Hero Section -->
-    <main class="hero-section">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <span class="badge">Official Health Portal</span>
-            <h1>Community-Based Blood Donor Management & Emergency Matching System</h1>
-            <p class="welcome-msg">
-                Connecting volunteer blood donors with local health centers and urgent patient requests across General Santos City. Fast, centralized, and life-saving coordination when every second counts.
-            </p>
-            <div class="cta-buttons">
-                <button class="btn-primary" id="getStartedBtn">Get Started</button>
-                <button class="btn-outline" id="learnMoreBtn">Learn More</button>
+    <!-- 2. MAIN DASHBOARD LAYOUT -->
+    <main id="mainDashboardView" style="display: none;">
+
+        <header class="app-header">
+            <div class="logo-container">
+                <span class="logo-icon">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 2.5c3.2 4.4 7 9.2 7 13.2a7 7 0 1 1-14 0c0-4 3.8-8.8 7-13.2Z"/></svg>
+                </span>
+                <div>
+                    <h1>City Health Office Services</h1>
+                    <p>Community Blood Donor &amp; Emergency Matching System</p>
+                </div>
             </div>
+            <div class="user-control-panel">
+                <span id="roleBadge" class="badge badge-role">Guest</span>
+                <span id="welcomeUserMsg"></span>
+                <button class="btn-auth btn-danger" id="btnLogoutNav">
+                    <svg class="icon" viewBox="0 0 24 24" width="15" height="15"><path d="M15 17.5 20 12l-5-5.5M20 12H9M9 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H9"/></svg>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="app-layout">
+
+            <aside class="sidebar-nav">
+                <div class="sidebar-label">System Modules</div>
+                <ul id="sidebarMenu" class="nav-menu"></ul>
+            </aside>
+
+            <section class="main-content">
+
+                <!-- MODULE: HOME / DYNAMIC ENTITY DASHBOARD -->
+                <div id="viewHome" class="module-view">
+                    
+                    <!-- NEW NAVY BLUE DESIGN: MAIN DASHBOARD CENTER BOX / HERO BANNER -->
+                    <div class="hero-dashboard-box">
+                        <div class="hero-header">
+                            <div>
+                                <span class="hero-tagline">City Health Operations Command</span>
+                                <h2 id="welcomeBannerTitle">Welcome to Blood Emergency Management System</h2>
+                                <p id="welcomeBannerDesc">Mabilis at maaasahang pamamahala sa blood matching, volunteer donor records, at emergency medical requests.</p>
+                            </div>
+                            <div class="hero-pulse-indicator">
+                                <span class="pulse-dot"></span> System Live &amp; Operational
+                            </div>
+                        </div>
+
+                        <!-- METRICS GRID INSIDE CENTER BOX -->
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon icon-red">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 2.5c3.2 4.4 7 9.2 7 13.2a7 7 0 1 1-14 0c0-4 3.8-8.8 7-13.2Z"/></svg>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-value" id="statTotalDonors">0</span>
+                                    <span class="metric-label">Registered Donors</span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon icon-orange">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 3.5 2 20.5h20L12 3.5Z"/><path d="M12 10v4.2M12 17.2h.01"/></svg>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-value" id="statActiveRequests">0</span>
+                                    <span class="metric-label">Pending Emergency Requests</span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon icon-green">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M9 12.5 11 14.5 15.5 10"/><circle cx="12" cy="12" r="9.5"/></svg>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-value" id="statVerifiedDonors">0</span>
+                                    <span class="metric-label">Verified Active Donors</span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon icon-teal">
+                                    <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v3.5M16 3v3.5"/></svg>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-value" id="statUpcomingDrives">0</span>
+                                    <span class="metric-label">Upcoming Blood Drives</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ENTITY DYNAMIC DASHBOARDS -->
+
+                    <!-- 1. CHO ADMIN DASHBOARD PANEL -->
+                    <div id="entityDashChoAdmin" class="entity-dashboard" style="display:none;">
+                        <div class="entity-title-bar">
+                            <h3><svg class="icon" viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> City Health Office Admin Console</h3>
+                        </div>
+                        <div class="entity-grid">
+                            <div class="card entity-card">
+                                <div class="card-header"><h4>Quick Administrative Actions</h4></div>
+                                <div class="card-body entity-actions-list">
+                                    <button class="btn-action-tile" onclick="switchModuleView('viewUsers')">
+                                        <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.7-3.4 3-5.3 5.5-5.3s4.8 1.9 5.5 5.3"/></svg>
+                                        Manage System Users
+                                    </button>
+                                    <button class="btn-action-tile" onclick="switchModuleView('viewReports')">
+                                        <svg class="icon" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M20 20H4"/></svg>
+                                        System Analytics &amp; Reports
+                                    </button>
+                                    <button class="btn-action-tile" onclick="switchModuleView('viewDonors')">
+                                        <svg class="icon" viewBox="0 0 24 24"><path d="M9 12.5 11 14.5 15.5 10"/><circle cx="12" cy="12" r="9.5"/></svg>
+                                        Verify Pending Donors
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card entity-card">
+                                <div class="card-header"><h4>System Status Overview</h4></div>
+                                <div class="card-body">
+                                    <ul class="system-status-list">
+                                        <li><span>Database Connection:</span> <span class="badge badge-success">Active ('rexdb')</span></li>
+                                        <li><span>Matching Engine:</span> <span class="badge badge-success">Online</span></li>
+                                        <li><span>Pending Donor Verifications:</span> <span id="choPendingCount" class="badge badge-warning">0</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. HOSPITAL STAFF DASHBOARD PANEL -->
+                    <div id="entityDashHospital" class="entity-dashboard" style="display:none;">
+                        <div class="entity-title-bar">
+                            <h3><svg class="icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2Z"/><path d="M12 7v10M7 12h10"/></svg> Hospital Emergency Desk</h3>
+                        </div>
+                        <div class="entity-grid">
+                            <div class="card entity-card">
+                                <div class="card-header"><h4>Emergency Response Trigger</h4></div>
+                                <div class="card-body">
+                                    <p style="font-size: 0.9rem; margin-bottom: 15px; color: var(--ink-faint);">Kailangan ng mabilisang blood supply para sa pasyente? Magpadala agad ng emergency match request.</p>
+                                    <button class="btn-submit btn-alert full-width" onclick="openModal('requestModal')">
+                                        <svg class="icon" viewBox="0 0 24 24" stroke="white"><path d="M12 3.5 2 20.5h20L12 3.5Z"/><path d="M12 10v4.2M12 17.2h.01"/></svg>
+                                        New Emergency Blood Request
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card entity-card">
+                                <div class="card-header"><h4>Active Hospital Requests</h4></div>
+                                <div class="card-body">
+                                    <div id="hospitalActiveRequestsSummary">
+                                        <p style="color:var(--ink-faint); font-size:0.85rem;">Loading active requests...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. BARANGAY HEALTH WORKER DASHBOARD PANEL -->
+                    <div id="entityDashBhw" class="entity-dashboard" style="display:none;">
+                        <div class="entity-title-bar">
+                            <h3><svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Barangay Health Worker Desk</h3>
+                        </div>
+                        <div class="entity-grid">
+                            <div class="card entity-card">
+                                <div class="card-header"><h4>Community Donor Assistance</h4></div>
+                                <div class="card-body">
+                                    <p style="font-size:0.88rem; margin-bottom:12px; color:var(--ink-faint);">I-rehistro ang mga residenteng gustong maging volunteer blood donor sa iyong barangay.</p>
+                                    <button class="btn-toolbar btn-success full-width" onclick="openModal('registerModal')" style="justify-content:center; padding:12px;">
+                                        <svg class="icon" viewBox="0 0 24 24" width="16" height="16"><path d="M12 5v14M5 12h14"/></svg>
+                                        Register Resident Blood Donor
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card entity-card">
+                                <div class="card-header"><h4>Community Blood Drive Mobilization</h4></div>
+                                <div class="card-body">
+                                    <p style="font-size:0.88rem; margin-bottom:12px; color:var(--ink-faint);">Mag-schedule ng blood donation activity sa iyong barangay hall o gymnasium.</p>
+                                    <button class="btn-toolbar full-width" onclick="openModal('driveModal')" style="justify-content:center; padding:12px;">
+                                        <svg class="icon" viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v3.5M16 3v3.5"/></svg>
+                                        Schedule Blood Drive
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. VOLUNTEER DONOR DASHBOARD PANEL -->
+                    <div id="entityDashDonor" class="entity-dashboard" style="display:none;">
+                        <div class="entity-title-bar">
+                            <h3><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c1-4.2 3.8-6.5 7.5-6.5s6.5 2.3 7.5 6.5"/></svg> Volunteer Donor Portal</h3>
+                        </div>
+                        <div class="donor-hero-card">
+                            <div class="donor-hero-badge">
+                                <span>Blood Group</span>
+                                <strong id="donorPortalBloodTypeBadge">O+</strong>
+                            </div>
+                            <div class="donor-hero-info">
+                                <h4 id="donorPortalName">Donor Name</h4>
+                                <p id="donorPortalLocation">Barangay Location</p>
+                                <span id="donorPortalVerification" class="badge badge-success">Verified Donor</span>
+                            </div>
+                            <div class="donor-hero-action">
+                                <button class="btn-toolbar" onclick="switchModuleView('viewMyProfile')">View Profile &amp; Emergency Alerts</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- MODULE: DONOR RECORDS & VERIFICATION -->
+                <div id="viewDonors" class="module-view" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M8 2.5h8a1 1 0 0 1 1 1V5H7V3.5a1 1 0 0 1 1-1Z"/><rect x="5" y="5" width="14" height="16.5" rx="2"/><path d="M9 11h6M9 14.5h6M9 18h4"/></svg>
+                                Donor Records &amp; Verification Status
+                            </h2>
+                            <button class="btn-toolbar btn-success" id="btnBhwRegisterDonor" style="display:none;">
+                                <svg class="icon" viewBox="0 0 24 24" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
+                                Assist Donor Registration
+                            </button>
+                        </div>
+                        <div class="card-body table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Donor ID</th><th>First Name</th><th>Last Name</th><th>Sex</th><th>Phone</th><th>Email</th><th>Barangay ID</th><th>Blood Type</th><th>Verification Status</th><th>Availability</th><th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="donorTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE: EMERGENCY BLOOD REQUESTS -->
+                <div id="viewRequests" class="module-view" style="display: none;">
+                    
+                    <!-- INLINE INTERACTIVE FORM 1: QUICK EMERGENCY BLOOD REQUEST FORM -->
+                    <div class="card form-card-inline">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                                Add New Emergency Blood Request
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="inlineRequestForm" class="grid-form-container">
+                                <div class="form-group">
+                                    <label for="inlineReqPatient">Patient Name:</label>
+                                    <input type="text" id="inlineReqPatient" class="form-control" required placeholder="Full Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inlineReqBloodType">Required Blood Type:</label>
+                                    <select id="inlineReqBloodType" class="form-control" required>
+                                        <option value="1">A+</option><option value="2">A-</option>
+                                        <option value="3">B+</option><option value="4">B-</option>
+                                        <option value="5">O+</option><option value="6">O-</option>
+                                        <option value="7">AB+</option><option value="8">AB-</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inlineReqQty">Quantity (Bags):</label>
+                                    <input type="number" id="inlineReqQty" class="form-control" min="1" required placeholder="e.g. 2">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inlineReqDate">Request Date:</label>
+                                    <input type="date" id="inlineReqDate" class="form-control" required>
+                                </div>
+                                <div class="btn-center-wrapper full-width">
+                                    <button type="submit" class="btn-submit btn-alert">Submit &amp; Append Request</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 3.5 2 20.5h20L12 3.5Z"/><path d="M12 10v4.2M12 17.2h.01"/></svg>
+                                Emergency Blood Requests Table
+                            </h2>
+                            <button class="btn-toolbar btn-alert" id="btnReqModuleAdd" style="display:none;">
+                                <svg class="icon" viewBox="0 0 24 24" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
+                                Submit Emergency Request Modal
+                            </button>
+                        </div>
+                        <div class="card-body table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Request ID</th><th>Patient Name</th><th>Hospital ID</th><th>Blood Type Needed</th><th>Hospital Barangay</th><th>Quantity (Bags)</th><th>Request Date</th><th>Request Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requestTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card" id="donationConfirmCard" style="display:none;">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M9 12.5 11 14.5 15.5 10"/><circle cx="12" cy="12" r="9.5"/></svg>
+                                Pending Donation Confirmations
+                            </h2>
+                        </div>
+                        <div class="card-body table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Donation ID</th><th>Donor</th><th>Blood Type</th><th>Request ID</th><th>Date</th><th>Status</th><th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingDonationsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE: MATCH QUALIFIED DONOR ENGINE -->
+                <div id="viewMatchedDonors" class="module-view" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+                                Qualified Matched Donors Engine
+                            </h2>
+                            <div id="matchedFilterTag" style="font-weight: 600; color: var(--teal); font-size: 0.85rem;"></div>
+                            <label class="filter-toggle">
+                                <input type="checkbox" id="filterSameBarangay">
+                                Same barangay only
+                            </label>
+                        </div>
+                        <div class="card-body table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Donor ID</th><th>Full Name</th><th>Sex</th><th>Blood Type</th><th>Location</th><th>Phone</th><th>Availability</th><th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="matchedDonorTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE: BLOOD DRIVES -->
+                <div id="viewDrives" class="module-view" style="display: none;">
+
+                    <!-- INLINE INTERACTIVE FORM 2: QUICK COMMUNITY BLOOD DRIVE FORM -->
+                    <div class="card form-card-inline">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                                Schedule New Community Blood Drive
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="inlineDriveForm" class="grid-form-container">
+                                <div class="form-group">
+                                    <label for="inlineDriveEvent">Event Name:</label>
+                                    <input type="text" id="inlineDriveEvent" class="form-control" required placeholder="Activity Title">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inlineDriveVenue">Location Venue:</label>
+                                    <input type="text" id="inlineDriveVenue" class="form-control" required placeholder="Barangay Gym / Hall">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inlineDriveDate">Schedule Date:</label>
+                                    <input type="date" id="inlineDriveDate" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inlineDriveBarangay">Target Barangay:</label>
+                                    <select id="inlineDriveBarangay" class="form-control" required>
+                                        <option value="1">Apopong</option><option value="2">Baluan</option>
+                                        <option value="3">Bula</option><option value="4">Calumpang</option>
+                                        <option value="5">City Heights</option><option value="6">Labangal</option>
+                                        <option value="7">Lagao</option><option value="8">San Isidro</option>
+                                    </select>
+                                </div>
+                                <div class="btn-center-wrapper full-width">
+                                    <button type="submit" class="btn-submit">Add Blood Drive Event</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v3.5M16 3v3.5"/></svg>
+                                Community Blood Drives Table
+                            </h2>
+                            <button class="btn-toolbar" id="btnDriveModuleAdd" style="display:none;">
+                                <svg class="icon" viewBox="0 0 24 24" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
+                                Schedule Blood Drive Modal
+                            </button>
+                        </div>
+                        <div class="card-body table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Drive ID</th><th>Event Name</th><th>Location</th><th>Schedule Date</th><th>Barangay ID</th><th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="driveTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE: SYSTEM USER ACCOUNTS -->
+                <div id="viewUsers" class="module-view" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.7-3.4 3-5.3 5.5-5.3s4.8 1.9 5.5 5.3"/><circle cx="17" cy="8.5" r="2.6"/><path d="M15.5 14.9c2.2.3 3.9 2.1 4.5 5.1"/></svg>
+                                Manage System User Accounts
+                            </h2>
+                            <button class="btn-toolbar btn-success" id="btnAdminCreateAccount">
+                                <svg class="icon" viewBox="0 0 24 24" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
+                                Create Account
+                            </button>
+                        </div>
+                        <div class="card-body table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>User ID</th><th>Username</th><th>Role</th><th>Status</th><th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userAccountTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE: REPORTS GENERATION -->
+                <div id="viewReports" class="module-view" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M20 20H4"/></svg>
+                                Generate System Reports
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="report-btn-row">
+                                <button onclick="generateReport('Donor')" class="report-btn">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M8 2.5h8a1 1 0 0 1 1 1V5H7V3.5a1 1 0 0 1 1-1Z"/><rect x="5" y="5" width="14" height="16.5" rx="2"/><path d="M9 11h6M9 14.5h6M9 18h4"/></svg>
+                                    Generate Donor Report
+                                </button>
+                                <button onclick="generateReport('Emergency')" class="report-btn">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 3.5 2 20.5h20L12 3.5Z"/><path d="M12 10v4.2M12 17.2h.01"/></svg>
+                                    Generate Emergency Report
+                                </button>
+                                <button onclick="generateReport('Donation')" class="report-btn">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 2.5c3.2 4.4 7 9.2 7 13.2a7 7 0 1 1-14 0c0-4 3.8-8.8 7-13.2Z"/></svg>
+                                    Generate Donation Report
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="reportOutputContainer" class="report-output">
+                                <p style="color:var(--ink-faint);">Select a report above to generate system logs.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE: MANAGE NOTIFICATIONS (CHO Admin) -->
+                <div id="viewManageNotifications" class="module-view" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 5.5-2 7-2 7h16s-2-1.5-2-7"/><path d="M10.5 19a1.7 1.7 0 0 0 3 0"/></svg>
+                                Manage System Notifications
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="adminNotificationsContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE: DONOR PORTAL & NOTIFICATIONS -->
+                <div id="viewMyProfile" class="module-view" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 3.5 2 20.5h20L12 3.5Z"/><path d="M12 10v4.2M12 17.2h.01"/></svg>
+                                Emergency Blood Notifications
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="donorNotificationsContainer">
+                                <p style="color:var(--ink-faint);">No pending emergency blood requests.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c1-4.2 3.8-6.5 7.5-6.5s6.5 2.3 7.5 6.5"/></svg>
+                                Personal Donor Profile &amp; Availability
+                            </h2>
+                            <button class="btn-icon-sm btn-edit" id="btnEditDonorProfile">
+                                <svg class="icon" viewBox="0 0 24 24" width="13" height="13" stroke="white"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/></svg>
+                                Update Personal Details
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="myProfileContent"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <p>&copy; 2026 City Health Office – General Santos City. All Rights Reserved.</p>
-            <p class="developers">
-                <strong>Developers:</strong> Augustine Raf L. Tesorero (Leader) | Petnaryson T. Vallecera | Rex Joshua S. Del Rosario
-            </p>
-            <p class="course-info">Holy Trinity College of General Santos City - CETE</p>
+    <!-- MODALS -->
+
+    <!-- USER REGISTRATION MODAL (GRID LAYOUT FORM) -->
+    <div id="staffRegisterModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-btn" data-close="staffRegisterModal">&times;</span>
+            <h2 style="grid-column: 1 / -1; margin-bottom: 10px; color: var(--navy-dark);">System Account Registration</h2>
+            <form id="formStaffRegister" class="grid-form-container">
+
+                <div class="form-group full-width">
+                    <label for="staffRegRole">Select Account Role:</label>
+                    <select id="staffRegRole" class="form-control" required onchange="toggleRoleFormFields()">
+                        <option value="2">Hospital Staff</option>
+                        <option value="1">City Health Office Admin</option>
+                        <option value="3">Barangay Health Worker</option>
+                        <option value="4">Volunteer Blood Donor</option>
+                    </select>
+                </div>
+
+                <!-- CHO ADMIN FIELDS -->
+                <div id="choFieldsGroup" class="full-width grid-subgroup" style="display: none;">
+                    <div class="form-group"><label>First Name:</label><input type="text" id="choFirName" class="form-control"></div>
+                    <div class="form-group"><label>Last Name:</label><input type="text" id="choLstName" class="form-control"></div>
+                </div>
+
+                <!-- HOSPITAL STAFF FIELDS -->
+                <div id="hospitalFieldsGroup" class="full-width grid-subgroup">
+                    <div class="form-group"><label>Hospital Name:</label><input type="text" id="hospName" class="form-control"></div>
+                    <div class="form-group"><label>Contact Number:</label><input type="text" id="hospCttNumber" class="form-control" placeholder="09xxxxxxxxx"></div>
+                    <div class="form-group"><label>Address / Street:</label><input type="text" id="hospAdd" class="form-control"></div>
+                    <div class="form-group">
+                        <label>Barangay:</label>
+                        <select id="hospBarangayId" class="form-control">
+                            <option value="1">Apopong</option><option value="2">Baluan</option>
+                            <option value="3">Bula</option><option value="4">Calumpang</option>
+                            <option value="5">City Heights</option><option value="6">Labangal</option>
+                            <option value="7">Lagao</option><option value="8">San Isidro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- BHW FIELDS -->
+                <div id="bhwFieldsGroup" class="full-width grid-subgroup" style="display: none;">
+                    <div class="form-group"><label>First Name:</label><input type="text" id="bhwFirName" class="form-control"></div>
+                    <div class="form-group"><label>Last Name:</label><input type="text" id="bhwLstName" class="form-control"></div>
+                    <div class="form-group"><label>Contact Number:</label><input type="text" id="bhwCttNumber" class="form-control" placeholder="09xxxxxxxxx"></div>
+                    <div class="form-group">
+                        <label>Assigned Barangay:</label>
+                        <select id="bhwBarangayId" class="form-control">
+                            <option value="1">Apopong</option><option value="2">Baluan</option>
+                            <option value="3">Bula</option><option value="4">Calumpang</option>
+                            <option value="5">City Heights</option><option value="6">Labangal</option>
+                            <option value="7">Lagao</option><option value="8">San Isidro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- DONOR SELF REGISTRATION FIELDS -->
+                <div id="donorFieldsGroup" class="full-width grid-subgroup" style="display: none;">
+                    <div class="form-group"><label>First Name:</label><input type="text" id="selfDonorFirName" class="form-control"></div>
+                    <div class="form-group"><label>Middle Name:</label><input type="text" id="selfDonorMidName" class="form-control"></div>
+                    <div class="form-group"><label>Last Name:</label><input type="text" id="selfDonorLstName" class="form-control"></div>
+                    <div class="form-group">
+                        <label>Sex:</label>
+                        <select id="selfDonorSex" class="form-control"><option value="Male">Male</option><option value="Female">Female</option></select>
+                    </div>
+                    <div class="form-group"><label>Birth Date:</label><input type="date" id="selfDonorBth" class="form-control"></div>
+                    <div class="form-group">
+                        <label>Blood Type:</label>
+                        <select id="selfDonorBloodType" class="form-control">
+                            <option value="1">A+</option><option value="2">A-</option>
+                            <option value="3">B+</option><option value="4">B-</option>
+                            <option value="5">O+</option><option value="6">O-</option>
+                            <option value="7">AB+</option><option value="8">AB-</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Phone Number:</label><input type="text" id="selfDonorPhone" class="form-control"></div>
+                    <div class="form-group"><label>Email:</label><input type="email" id="selfDonorEmail" class="form-control"></div>
+                    <div class="form-group"><label>Address (House No. / Street):</label><input type="text" id="selfDonorAdd" class="form-control"></div>
+                    <div class="form-group">
+                        <label>Barangay:</label>
+                        <select id="selfDonorBarangay" class="form-control">
+                            <option value="1">Apopong</option><option value="2">Baluan</option>
+                            <option value="3">Bula</option><option value="4">Calumpang</option>
+                            <option value="5">City Heights</option><option value="6">Labangal</option>
+                            <option value="7">Lagao</option><option value="8">San Isidro</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>City / Municipality:</label><input type="text" id="selfDonorCity" class="form-control" value="General Santos City"></div>
+                    <div class="form-group"><label>Region:</label><input type="text" id="selfDonorRegion" class="form-control" value="Region XII (SOCCSKSARGEN)"></div>
+                </div>
+
+                <div class="full-width"><hr style="border: 0; border-top: 1px solid var(--border-color); margin: 10px 0;"></div>
+                <div class="form-group full-width"><h4 style="color:var(--navy-dark);">Login Credentials</h4></div>
+                <div class="form-group"><label>Username:</label><input type="text" id="staffRegUser" class="form-control" required placeholder="username"></div>
+                <div class="form-group"><label>Password:</label><input type="password" id="staffRegPass" class="form-control" required placeholder="••••••••"></div>
+
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">REGISTER ACCOUNT</button>
+                </div>
+            </form>
         </div>
-    </footer>
+    </div>
+
+    <!-- BHW ASSIST DONOR MODAL (GRID LAYOUT FORM) -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-btn" data-close="registerModal">&times;</span>
+            <h2 style="grid-column: 1 / -1; margin-bottom: 10px; color: var(--navy-dark);">System Account Registration</h2>
+
+            <form id="registerForm" class="grid-form-container">
+                <div class="form-group full-width">
+                    <label for="accountRole">Select Account Role:</label>
+                    <select id="accountRole" name="accountRole" class="form-control" required>
+                        <option value="Volunteer Blood Donor">Volunteer Blood Donor</option>
+                        <option value="Barangay Health Worker">Barangay Health Worker</option>
+                        <option value="Hospital Staff">Hospital Staff</option>
+                        <option value="CHO Admin">CHO Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="firstName">First Name:</label>
+                    <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Enter first name" required>
+                </div>
+                <div class="form-group">
+                    <label for="middleName">Middle Name:</label>
+                    <input type="text" id="middleName" name="middleName" class="form-control" placeholder="Enter middle name">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Last Name:</label>
+                    <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Enter last name" required>
+                </div>
+                <div class="form-group">
+                    <label for="sex">Sex:</label>
+                    <select id="sex" name="sex" class="form-control">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="birthDate">Birth Date:</label>
+                    <input type="date" id="birthDate" name="birthDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="bloodType">Blood Type:</label>
+                    <select id="bloodType" name="bloodType" class="form-control">
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="09123456789" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter email address" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Address (House No. / Street):</label>
+                    <input type="text" id="address" name="address" class="form-control" placeholder="Enter street address">
+                </div>
+                <div class="form-group">
+                    <label for="barangay">Barangay:</label>
+                    <select id="barangay" name="barangay" class="form-control">
+                        <option value="Apopong">Apopong</option>
+                        <option value="Baluan">Baluan</option>
+                        <option value="Bula">Bula</option>
+                        <option value="Calumpang">Calumpang</option>
+                        <option value="City Heights">City Heights</option>
+                        <option value="Dadiangas East">Dadiangas East</option>
+                        <option value="Dadiangas North">Dadiangas North</option>
+                        <option value="Dadiangas South">Dadiangas South</option>
+                        <option value="Dadiangas West">Dadiangas West</option>
+                        <option value="Labangal">Labangal</option>
+                        <option value="Lagao">Lagao</option>
+                        <option value="San Isidro">San Isidro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="city">City / Municipality:</label>
+                    <input type="text" id="city" name="city" class="form-control" value="General Santos City">
+                </div>
+                <div class="form-group">
+                    <label for="region">Region:</label>
+                    <input type="text" id="region" name="region" class="form-control" value="Region XII (SOCCSKSARGEN)">
+                </div>
+
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">Submit Registration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EMERGENCY REQUEST MODAL -->
+    <div id="requestModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-btn" data-close="requestModal">&times;</span>
+            <h2 style="margin-bottom: 15px;">Submit Emergency Blood Request</h2>
+            <form id="formEmergencyRequest" class="grid-form-container">
+                <div class="form-group"><label>Patient Name:</label><input type="text" id="reqPatient" class="form-control" required></div>
+                <div class="form-group">
+                    <label>Required Blood Type:</label>
+                    <select id="reqBloodType" class="form-control">
+                        <option value="1">A+</option><option value="2">A-</option>
+                        <option value="3">B+</option><option value="4">B-</option>
+                        <option value="5">O+</option><option value="6">O-</option>
+                        <option value="7">AB+</option><option value="8">AB-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Quantity (Bags Needed):</label><input type="number" id="reqQty" class="form-control" min="1" required></div>
+                <div class="form-group"><label>Request Date:</label><input type="date" id="reqDate" class="form-control" required></div>
+                <p class="text-muted full-width" style="margin-top:4px; font-size:0.8rem;">Matching donor location will be based on your hospital's registered barangay.</p>
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">Search Matching Donors</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BLOOD DRIVE MODAL -->
+    <div id="driveModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-close="driveModal">&times;</span>
+            <h2 style="margin-bottom: 15px;">Schedule Community Blood Drive</h2>
+            <form id="formBloodDrive" class="grid-form-container">
+                <div class="form-group full-width"><label>Event Name:</label><input type="text" id="driveEvent" class="form-control" required></div>
+                <div class="form-group full-width"><label>Location Venue:</label><input type="text" id="driveVenue" class="form-control" required></div>
+                <div class="form-group"><label>Schedule Date:</label><input type="date" id="driveDate" class="form-control" required></div>
+                <div class="form-group">
+                    <label>Target Barangay:</label>
+                    <select id="driveBarangay" class="form-control">
+                        <option value="1">Apopong</option><option value="2">Baluan</option>
+                        <option value="3">Bula</option><option value="4">Calumpang</option>
+                        <option value="5">City Heights</option><option value="6">Labangal</option>
+                        <option value="7">Lagao</option><option value="8">San Isidro</option>
+                    </select>
+                </div>
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">Save Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT USER MODAL -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-close="editUserModal">&times;</span>
+            <h2 style="margin-bottom: 15px;">Edit User Account</h2>
+            <form id="formEditUser">
+                <input type="hidden" id="editUserId">
+                <div class="form-group full-width">
+                    <label>Username:</label>
+                    <input type="text" id="editUserUsername" class="form-control" required>
+                </div>
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT BLOOD DRIVE MODAL -->
+    <div id="editDriveModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-close="editDriveModal">&times;</span>
+            <h2 style="margin-bottom: 15px;">Update Blood Drive</h2>
+            <form id="formEditDrive" class="grid-form-container">
+                <input type="hidden" id="editDriveId">
+                <div class="form-group full-width"><label>Event Name:</label><input type="text" id="editDriveEvent" class="form-control" required></div>
+                <div class="form-group full-width"><label>Location Venue:</label><input type="text" id="editDriveVenue" class="form-control" required></div>
+                <div class="form-group"><label>Schedule Date:</label><input type="date" id="editDriveDate" class="form-control" required></div>
+                <div class="form-group">
+                    <label>Target Barangay:</label>
+                    <select id="editDriveBarangay" class="form-control">
+                        <option value="1">Apopong</option><option value="2">Baluan</option>
+                        <option value="3">Bula</option><option value="4">Calumpang</option>
+                        <option value="5">City Heights</option><option value="6">Labangal</option>
+                        <option value="7">Lagao</option><option value="8">San Isidro</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label>Status:</label>
+                    <select id="editDriveStatus" class="form-control">
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Ongoing">Ongoing</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DONOR PROFILE UPDATE MODAL -->
+    <div id="editDonorProfileModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-btn" data-close="editDonorProfileModal">&times;</span>
+            <h2 style="margin-bottom: 15px;">Update Personal Details</h2>
+            <form id="formEditDonorProfile" class="grid-form-container">
+                <div class="form-group"><label>First Name:</label><input type="text" id="editProfileFirName" class="form-control" required></div>
+                <div class="form-group"><label>Middle Name:</label><input type="text" id="editProfileMidName" class="form-control"></div>
+                <div class="form-group"><label>Last Name:</label><input type="text" id="editProfileLstName" class="form-control" required></div>
+                <div class="form-group"><label>Phone Number:</label><input type="text" id="editProfilePhone" class="form-control" required></div>
+                <div class="form-group"><label>Email:</label><input type="email" id="editProfileEmail" class="form-control" required></div>
+                <div class="form-group"><label>Address:</label><input type="text" id="editProfileAdd" class="form-control" required></div>
+                <div class="form-group">
+                    <label>Barangay:</label>
+                    <select id="editProfileBarangay" class="form-control">
+                        <option value="1">Apopong</option><option value="2">Baluan</option>
+                        <option value="3">Bula</option><option value="4">Calumpang</option>
+                        <option value="5">City Heights</option><option value="6">Labangal</option>
+                        <option value="7">Lagao</option><option value="8">San Isidro</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>City:</label><input type="text" id="editProfileCity" class="form-control" required></div>
+                <div class="form-group"><label>Region:</label><input type="text" id="editProfileRegion" class="form-control" required></div>
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="js/script.js"></script>
 </body>
