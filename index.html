@@ -577,6 +577,15 @@
                                 </div>
                                 <p class="settings-help full-width">Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.</p>
                             </form>
+
+                            <!-- [TASK 7 - ADDED] Saved records (Local Storage) - shown to CHO Admin only -->
+                            <div id="settingsStorageCard" class="settings-form" style="display: none;">
+                                <h3 style="margin-bottom: 8px;">Saved Records</h3>
+                                <p class="settings-help">Every valid record you add is saved in this browser (Local Storage), so it is still here after you refresh the page.</p>
+                                <p id="storageSummary" class="settings-account-summary" style="margin: 10px 0;"></p>
+                                <p id="storageLastSaved" class="settings-help" style="margin-bottom: 10px;"></p>
+                                <button type="button" id="btnResetSavedRecords" class="btn-sm btn-danger">Reset to Sample Data</button>
+                            </div>
                         </div>
                     </div>
                 </div>
