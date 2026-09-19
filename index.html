@@ -20,21 +20,12 @@
                     <p>City Health Office Blood Emergency System</p>
                 </div>
 
-                <form id="initialLoginForm">
-                    <div class="form-group">
-                        <label for="initialLoginRole">Select System Account Role</label>
-                        <select id="initialLoginRole" class="form-control" required>
-                            <option value="1">City Health Office Admin</option>
-                            <option value="2">Hospital Staff</option>
-                            <option value="3">Barangay Health Worker</option>
-                            <option value="4">Volunteer Blood Donor</option>
-                        </select>
-                    </div>
+                <form id="initialLoginForm" novalidate>
                     <div class="form-group">
                         <label for="initialLoginUsername">Username</label>
                         <div class="input-with-icon">
                             <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c1-4.2 3.8-6.5 7.5-6.5s6.5 2.3 7.5 6.5"/></svg>
-                            <input type="text" id="initialLoginUsername" class="form-control" required placeholder="Enter username">
+                            <input type="text" id="initialLoginUsername" class="form-control" required minlength="3" maxlength="30" pattern="[A-Za-z0-9._\-]+" placeholder="Enter username">
                         </div>
                     </div>
                     <div class="form-group">
@@ -51,10 +42,6 @@
                         </button>
                     </div>
                 </form>
-
-                <div style="text-align: center; margin-top: 18px;">
-                    <p class="text-muted">No account? <a href="#" id="linkOpenStaffRegister">Register New Account</a></p>
-                </div>
             </div>
         </div>
     </section>
@@ -278,7 +265,7 @@
                             </h2>
                             <button class="btn-toolbar btn-success" id="btnBhwRegisterDonor" style="display:none;">
                                 <svg class="icon" viewBox="0 0 24 24" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
-                                Assist Donor Registration
+                                Register Donor
                             </button>
                         </div>
                         <div class="card-body table-responsive">
@@ -306,15 +293,16 @@
                             </h2>
                         </div>
                         <div class="card-body">
-                            <form id="inlineRequestForm" class="grid-form-container">
+                            <form id="inlineRequestForm" class="grid-form-container" novalidate>
                                 <div class="form-group">
                                     <label for="inlineReqPatient">Patient Name:</label>
-                                    <input type="text" id="inlineReqPatient" class="form-control" required placeholder="Full Name">
+                                    <input type="text" id="inlineReqPatient" class="form-control" required minlength="2" maxlength="100" pattern="[A-Za-zÀ-ÿ .'\-]+" placeholder="Full Name">
                                 </div>
                                 <div class="form-group">
                                     <label for="inlineReqBloodType">Required Blood Type:</label>
                                     <select id="inlineReqBloodType" class="form-control" required>
-                                        <option value="1">A+</option><option value="2">A-</option>
+                        <option value="">Select Blood Type</option>
+<option value="1">A+</option><option value="2">A-</option>
                                         <option value="3">B+</option><option value="4">B-</option>
                                         <option value="5">O+</option><option value="6">O-</option>
                                         <option value="7">AB+</option><option value="8">AB-</option>
@@ -322,7 +310,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="inlineReqQty">Quantity (Bags):</label>
-                                    <input type="number" id="inlineReqQty" class="form-control" min="1" required placeholder="e.g. 2">
+                                    <input type="number" id="inlineReqQty" class="form-control" min="1" max="20" step="1" required placeholder="e.g. 2">
                                 </div>
                                 <div class="form-group">
                                     <label for="inlineReqDate">Request Date:</label>
@@ -417,14 +405,14 @@
                             </h2>
                         </div>
                         <div class="card-body">
-                            <form id="inlineDriveForm" class="grid-form-container">
+                            <form id="inlineDriveForm" class="grid-form-container" novalidate>
                                 <div class="form-group">
                                     <label for="inlineDriveEvent">Event Name:</label>
-                                    <input type="text" id="inlineDriveEvent" class="form-control" required placeholder="Activity Title">
+                                    <input type="text" id="inlineDriveEvent" class="form-control" required minlength="3" maxlength="100" placeholder="Activity Title">
                                 </div>
                                 <div class="form-group">
                                     <label for="inlineDriveVenue">Location Venue:</label>
-                                    <input type="text" id="inlineDriveVenue" class="form-control" required placeholder="Barangay Gym / Hall">
+                                    <input type="text" id="inlineDriveVenue" class="form-control" required minlength="3" maxlength="150" placeholder="Barangay Gym / Hall">
                                 </div>
                                 <div class="form-group">
                                     <label for="inlineDriveDate">Schedule Date:</label>
@@ -433,7 +421,8 @@
                                 <div class="form-group">
                                     <label for="inlineDriveBarangay">Target Barangay:</label>
                                     <select id="inlineDriveBarangay" class="form-control" required>
-                                        <option value="1">Apopong</option><option value="2">Baluan</option>
+                        <option value="">Select Barangay</option>
+<option value="1">Apopong</option><option value="2">Baluan</option>
                                         <option value="3">Bula</option><option value="4">Calumpang</option>
                                         <option value="5">City Heights</option><option value="6">Labangal</option>
                                         <option value="7">Lagao</option><option value="8">San Isidro</option>
@@ -480,7 +469,7 @@
                             </h2>
                             <button class="btn-toolbar btn-success" id="btnAdminCreateAccount">
                                 <svg class="icon" viewBox="0 0 24 24" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
-                                Create Account
+                                Register Donor
                             </button>
                         </div>
                         <div class="card-body table-responsive">
@@ -544,6 +533,54 @@
                     </div>
                 </div>
 
+
+                <!-- MODULE: ACCOUNT SETTINGS -->
+                <div id="viewSettings" class="module-view" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.1 1.9-2.1 2.1-1.9-1.1-.1-.1a7.8 7.8 0 0 1-2 .8V21h-3v-2.3a7.8 7.8 0 0 1-2-.8l-.1.1-1.9 1.1-2.1-2.1 1.1-1.9.1-.1a7.8 7.8 0 0 1-.8-2H3.5v-3h2.3a7.8 7.8 0 0 1 .8-2l-.1-.1-1.1-1.9 2.1-2.1 1.9 1.1.1.1a7.8 7.8 0 0 1 2-.8V3h3v2.3a7.8 7.8 0 0 1 2 .8l.1-.1 1.9-1.1 2.1 2.1-1.1 1.9-.1.1a7.8 7.8 0 0 1 .8 2h2.3v3h-2.3a7.8 7.8 0 0 1-.8 2Z"/></svg>
+                                Account Settings
+                            </h2>
+                        </div>
+                        <div class="card-body settings-container">
+                            <div class="settings-account-summary">
+                                <strong>Current Username:</strong>
+                                <span id="settingsCurrentUsername">-</span>
+                            </div>
+
+                            <form id="formChangeUsername" class="grid-form-container settings-form" novalidate>
+                                <div class="form-group">
+                                    <label for="settingsNewUsername">New Username:</label>
+                                    <input type="text" id="settingsNewUsername" class="form-control" required minlength="3" maxlength="30" pattern="[A-Za-z0-9._\-]+" autocomplete="username">
+                                </div>
+                                <div class="btn-center-wrapper" style="justify-content:flex-start; margin-top:0;">
+                                    <button type="submit" class="btn-submit">Change Username</button>
+                                </div>
+                            </form>
+
+                            <form id="formChangePassword" class="grid-form-container settings-form" novalidate>
+                                <div class="form-group">
+                                    <label for="settingsCurrentPassword">Current Password:</label>
+                                    <input type="password" id="settingsCurrentPassword" class="form-control" required autocomplete="current-password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="settingsNewPassword">New Password:</label>
+                                    <input type="password" id="settingsNewPassword" class="form-control" required minlength="8" maxlength="64" autocomplete="new-password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="settingsConfirmPassword">Confirm New Password:</label>
+                                    <input type="password" id="settingsConfirmPassword" class="form-control" required minlength="8" maxlength="64" autocomplete="new-password">
+                                </div>
+                                <div class="btn-center-wrapper" style="justify-content:flex-start; margin-top:0;">
+                                    <button type="submit" class="btn-submit">Change Password</button>
+                                </div>
+                                <p class="settings-help full-width">Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.</p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- MODULE: DONOR PORTAL & NOTIFICATIONS -->
                 <div id="viewMyProfile" class="module-view" style="display: none;">
                     <div class="card">
@@ -583,142 +620,33 @@
 
     <!-- MODALS -->
 
-    <!-- USER REGISTRATION MODAL (GRID LAYOUT FORM) -->
-    <div id="staffRegisterModal" class="modal">
-        <div class="modal-content modal-lg">
-            <span class="close-btn" data-close="staffRegisterModal">&times;</span>
-            <h2 style="grid-column: 1 / -1; margin-bottom: 10px; color: var(--navy-dark);">System Account Registration</h2>
-            <form id="formStaffRegister" class="grid-form-container">
-
-                <div class="form-group full-width">
-                    <label for="staffRegRole">Select Account Role:</label>
-                    <select id="staffRegRole" class="form-control" required onchange="toggleRoleFormFields()">
-                        <option value="2">Hospital Staff</option>
-                        <option value="1">City Health Office Admin</option>
-                        <option value="3">Barangay Health Worker</option>
-                        <option value="4">Volunteer Blood Donor</option>
-                    </select>
-                </div>
-
-                <!-- CHO ADMIN FIELDS -->
-                <div id="choFieldsGroup" class="full-width grid-subgroup" style="display: none;">
-                    <div class="form-group"><label>First Name:</label><input type="text" id="choFirName" class="form-control"></div>
-                    <div class="form-group"><label>Last Name:</label><input type="text" id="choLstName" class="form-control"></div>
-                </div>
-
-                <!-- HOSPITAL STAFF FIELDS -->
-                <div id="hospitalFieldsGroup" class="full-width grid-subgroup">
-                    <div class="form-group"><label>Hospital Name:</label><input type="text" id="hospName" class="form-control"></div>
-                    <div class="form-group"><label>Contact Number:</label><input type="text" id="hospCttNumber" class="form-control" placeholder="09xxxxxxxxx"></div>
-                    <div class="form-group"><label>Address / Street:</label><input type="text" id="hospAdd" class="form-control"></div>
-                    <div class="form-group">
-                        <label>Barangay:</label>
-                        <select id="hospBarangayId" class="form-control">
-                            <option value="1">Apopong</option><option value="2">Baluan</option>
-                            <option value="3">Bula</option><option value="4">Calumpang</option>
-                            <option value="5">City Heights</option><option value="6">Labangal</option>
-                            <option value="7">Lagao</option><option value="8">San Isidro</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- BHW FIELDS -->
-                <div id="bhwFieldsGroup" class="full-width grid-subgroup" style="display: none;">
-                    <div class="form-group"><label>First Name:</label><input type="text" id="bhwFirName" class="form-control"></div>
-                    <div class="form-group"><label>Last Name:</label><input type="text" id="bhwLstName" class="form-control"></div>
-                    <div class="form-group"><label>Contact Number:</label><input type="text" id="bhwCttNumber" class="form-control" placeholder="09xxxxxxxxx"></div>
-                    <div class="form-group">
-                        <label>Assigned Barangay:</label>
-                        <select id="bhwBarangayId" class="form-control">
-                            <option value="1">Apopong</option><option value="2">Baluan</option>
-                            <option value="3">Bula</option><option value="4">Calumpang</option>
-                            <option value="5">City Heights</option><option value="6">Labangal</option>
-                            <option value="7">Lagao</option><option value="8">San Isidro</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- DONOR SELF REGISTRATION FIELDS -->
-                <div id="donorFieldsGroup" class="full-width grid-subgroup" style="display: none;">
-                    <div class="form-group"><label>First Name:</label><input type="text" id="selfDonorFirName" class="form-control"></div>
-                    <div class="form-group"><label>Middle Name:</label><input type="text" id="selfDonorMidName" class="form-control"></div>
-                    <div class="form-group"><label>Last Name:</label><input type="text" id="selfDonorLstName" class="form-control"></div>
-                    <div class="form-group">
-                        <label>Sex:</label>
-                        <select id="selfDonorSex" class="form-control"><option value="Male">Male</option><option value="Female">Female</option></select>
-                    </div>
-                    <div class="form-group"><label>Birth Date:</label><input type="date" id="selfDonorBth" class="form-control"></div>
-                    <div class="form-group">
-                        <label>Blood Type:</label>
-                        <select id="selfDonorBloodType" class="form-control">
-                            <option value="1">A+</option><option value="2">A-</option>
-                            <option value="3">B+</option><option value="4">B-</option>
-                            <option value="5">O+</option><option value="6">O-</option>
-                            <option value="7">AB+</option><option value="8">AB-</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Phone Number:</label><input type="text" id="selfDonorPhone" class="form-control"></div>
-                    <div class="form-group"><label>Email:</label><input type="email" id="selfDonorEmail" class="form-control"></div>
-                    <div class="form-group"><label>Address (House No. / Street):</label><input type="text" id="selfDonorAdd" class="form-control"></div>
-                    <div class="form-group">
-                        <label>Barangay:</label>
-                        <select id="selfDonorBarangay" class="form-control">
-                            <option value="1">Apopong</option><option value="2">Baluan</option>
-                            <option value="3">Bula</option><option value="4">Calumpang</option>
-                            <option value="5">City Heights</option><option value="6">Labangal</option>
-                            <option value="7">Lagao</option><option value="8">San Isidro</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>City / Municipality:</label><input type="text" id="selfDonorCity" class="form-control" value="General Santos City"></div>
-                    <div class="form-group"><label>Region:</label><input type="text" id="selfDonorRegion" class="form-control" value="Region XII (SOCCSKSARGEN)"></div>
-                </div>
-
-                <div class="full-width"><hr style="border: 0; border-top: 1px solid var(--border-color); margin: 10px 0;"></div>
-                <div class="form-group full-width"><h4 style="color:var(--navy-dark);">Login Credentials</h4></div>
-                <div class="form-group"><label>Username:</label><input type="text" id="staffRegUser" class="form-control" required placeholder="username"></div>
-                <div class="form-group"><label>Password:</label><input type="password" id="staffRegPass" class="form-control" required placeholder="••••••••"></div>
-
-                <div class="btn-center-wrapper full-width">
-                    <button type="submit" class="btn-submit">REGISTER ACCOUNT</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- BHW ASSIST DONOR MODAL (GRID LAYOUT FORM) -->
     <div id="registerModal" class="modal">
         <div class="modal-content modal-lg">
             <span class="close-btn" data-close="registerModal">&times;</span>
-            <h2 style="grid-column: 1 / -1; margin-bottom: 10px; color: var(--navy-dark);">System Account Registration</h2>
+            <h2 style="grid-column: 1 / -1; margin-bottom: 10px; color: var(--navy-dark);">Volunteer Blood Donor Registration</h2>
+            <p style="grid-column: 1 / -1; color: var(--ink-faint); margin-bottom: 12px;">Your login username and temporary password will be generated automatically and sent to the Gmail address you provide.</p>
 
-            <form id="registerForm" class="grid-form-container">
-                <div class="form-group full-width">
-                    <label for="accountRole">Select Account Role:</label>
-                    <select id="accountRole" name="accountRole" class="form-control" required>
-                        <option value="Volunteer Blood Donor">Volunteer Blood Donor</option>
-                        <option value="Barangay Health Worker">Barangay Health Worker</option>
-                        <option value="Hospital Staff">Hospital Staff</option>
-                        <option value="CHO Admin">CHO Admin</option>
-                    </select>
-                </div>
+            <form id="registerForm" class="grid-form-container" novalidate>
 
                 <div class="form-group">
                     <label for="firstName">First Name:</label>
-                    <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Enter first name" required>
+                    <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Enter first name" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+">
                 </div>
                 <div class="form-group">
                     <label for="middleName">Middle Name:</label>
-                    <input type="text" id="middleName" name="middleName" class="form-control" placeholder="Enter middle name">
+                    <input type="text" id="middleName" name="middleName" class="form-control" placeholder="Enter middle name" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+">
                 </div>
 
                 <div class="form-group">
                     <label for="lastName">Last Name:</label>
-                    <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Enter last name" required>
+                    <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Enter last name" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+">
                 </div>
                 <div class="form-group">
                     <label for="sex">Sex:</label>
-                    <select id="sex" name="sex" class="form-control">
-                        <option value="Male">Male</option>
+                    <select id="sex" name="sex" class="form-control" required>
+                        <option value="">Select Sex</option>
+<option value="Male">Male</option>
                         <option value="Female">Female</option>
                     </select>
                 </div>
@@ -729,8 +657,9 @@
                 </div>
                 <div class="form-group">
                     <label for="bloodType">Blood Type:</label>
-                    <select id="bloodType" name="bloodType" class="form-control">
-                        <option value="A+">A+</option>
+                    <select id="bloodType" name="bloodType" class="form-control" required>
+                        <option value="">Select Blood Type</option>
+<option value="A+">A+</option>
                         <option value="A-">A-</option>
                         <option value="B+">B+</option>
                         <option value="B-">B-</option>
@@ -743,44 +672,79 @@
 
                 <div class="form-group">
                     <label for="phone">Phone Number:</label>
-                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="09123456789" required>
+                    <input type="tel" id="phone" name="phone" class="form-control" value="+63" required minlength="13" maxlength="13" pattern="\+63[0-9]{10}" inputmode="numeric" autocomplete="tel">
                 </div>
                 <div class="form-group">
                     <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter email address" required>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="example@gmail.com" required maxlength="120" pattern="[A-Za-z0-9.!#$%&'*+\/=?^_`\{\|\}~\-]+@gmail\.com">
                 </div>
 
                 <div class="form-group">
                     <label for="address">Address (House No. / Street):</label>
-                    <input type="text" id="address" name="address" class="form-control" placeholder="Enter street address">
+                    <input type="text" id="address" name="address" class="form-control" placeholder="Enter street address" required minlength="5" maxlength="200">
+                </div>
+                <div class="form-group">
+                    <label for="region">Region:</label>
+                    <select id="region" name="region" class="form-control" required>
+                        <option value="">Select Region</option>
+                        <option value="National Capital Region (NCR)">National Capital Region (NCR)</option>
+                        <option value="Cordillera Administrative Region (CAR)">Cordillera Administrative Region (CAR)</option>
+                        <option value="Region I - Ilocos Region">Region I - Ilocos Region</option>
+                        <option value="Region II - Cagayan Valley">Region II - Cagayan Valley</option>
+                        <option value="Region III - Central Luzon">Region III - Central Luzon</option>
+                        <option value="Region IV-A - CALABARZON">Region IV-A - CALABARZON</option>
+                        <option value="MIMAROPA Region">MIMAROPA Region</option>
+                        <option value="Region V - Bicol Region">Region V - Bicol Region</option>
+                        <option value="Region VI - Western Visayas">Region VI - Western Visayas</option>
+                        <option value="Negros Island Region (NIR)">Negros Island Region (NIR)</option>
+                        <option value="Region VII - Central Visayas">Region VII - Central Visayas</option>
+                        <option value="Region VIII - Eastern Visayas">Region VIII - Eastern Visayas</option>
+                        <option value="Region IX - Zamboanga Peninsula">Region IX - Zamboanga Peninsula</option>
+                        <option value="Region X - Northern Mindanao">Region X - Northern Mindanao</option>
+                        <option value="Region XI - Davao Region">Region XI - Davao Region</option>
+                        <option value="Region XII - SOCCSKSARGEN">Region XII - SOCCSKSARGEN</option>
+                        <option value="Region XIII - Caraga">Region XIII - Caraga</option>
+                        <option value="Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)">Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="city">City / Municipality:</label>
+                    <select id="city" name="city" class="form-control" required disabled>
+                        <option value="">Select City</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="barangay">Barangay:</label>
-                    <select id="barangay" name="barangay" class="form-control">
+                    <select id="barangay" name="barangay" class="form-control" required disabled>
+                        <option value="">Select Barangay</option>
                         <option value="Apopong">Apopong</option>
                         <option value="Baluan">Baluan</option>
                         <option value="Bula">Bula</option>
                         <option value="Calumpang">Calumpang</option>
                         <option value="City Heights">City Heights</option>
-                        <option value="Dadiangas East">Dadiangas East</option>
-                        <option value="Dadiangas North">Dadiangas North</option>
-                        <option value="Dadiangas South">Dadiangas South</option>
-                        <option value="Dadiangas West">Dadiangas West</option>
                         <option value="Labangal">Labangal</option>
                         <option value="Lagao">Lagao</option>
                         <option value="San Isidro">San Isidro</option>
+                        <option value="Buayan">Buayan</option>
+                        <option value="Conel">Conel</option>
+                        <option value="Dadiangas East">Dadiangas East</option>
+                        <option value="Katangawan">Katangawan</option>
+                        <option value="Ligaya">Ligaya</option>
+                        <option value="Mabuhay">Mabuhay</option>
+                        <option value="San Jose">San Jose</option>
+                        <option value="Sinawal">Sinawal</option>
+                        <option value="Tambler">Tambler</option>
+                        <option value="Tinagacan">Tinagacan</option>
+                        <option value="Siguel">Siguel / Bawing</option>
+                        <option value="Upper Labay">Upper Labay</option>
+                        <option value="Batomelong">Batomelong</option>
+                        <option value="Dadiangas North">Dadiangas North</option>
+                        <option value="Dadiangas South">Dadiangas South</option>
+                        <option value="Dadiangas West">Dadiangas West</option>
+                        <option value="Fatima">Fatima</option>
+                        <option value="Olympog">Olympog</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="city">City / Municipality:</label>
-                    <input type="text" id="city" name="city" class="form-control" value="General Santos City">
-                </div>
-                <div class="form-group">
-                    <label for="region">Region:</label>
-                    <input type="text" id="region" name="region" class="form-control" value="Region XII (SOCCSKSARGEN)">
-                </div>
-
                 <div class="btn-center-wrapper full-width">
                     <button type="submit" class="btn-submit">Submit Registration</button>
                 </div>
@@ -793,18 +757,19 @@
         <div class="modal-content modal-lg">
             <span class="close-btn" data-close="requestModal">&times;</span>
             <h2 style="margin-bottom: 15px;">Submit Emergency Blood Request</h2>
-            <form id="formEmergencyRequest" class="grid-form-container">
-                <div class="form-group"><label>Patient Name:</label><input type="text" id="reqPatient" class="form-control" required></div>
+            <form id="formEmergencyRequest" class="grid-form-container" novalidate>
+                <div class="form-group"><label>Patient Name:</label><input type="text" id="reqPatient" class="form-control" required minlength="2" maxlength="100" pattern="[A-Za-zÀ-ÿ .'\-]+"></div>
                 <div class="form-group">
                     <label>Required Blood Type:</label>
-                    <select id="reqBloodType" class="form-control">
-                        <option value="1">A+</option><option value="2">A-</option>
+                    <select id="reqBloodType" class="form-control" required>
+                        <option value="">Select Blood Type</option>
+<option value="1">A+</option><option value="2">A-</option>
                         <option value="3">B+</option><option value="4">B-</option>
                         <option value="5">O+</option><option value="6">O-</option>
                         <option value="7">AB+</option><option value="8">AB-</option>
                     </select>
                 </div>
-                <div class="form-group"><label>Quantity (Bags Needed):</label><input type="number" id="reqQty" class="form-control" min="1" required></div>
+                <div class="form-group"><label>Quantity (Bags Needed):</label><input type="number" id="reqQty" class="form-control" min="1" max="20" step="1" required></div>
                 <div class="form-group"><label>Request Date:</label><input type="date" id="reqDate" class="form-control" required></div>
                 <p class="text-muted full-width" style="margin-top:4px; font-size:0.8rem;">Matching donor location will be based on your hospital's registered barangay.</p>
                 <div class="btn-center-wrapper full-width">
@@ -819,14 +784,15 @@
         <div class="modal-content">
             <span class="close-btn" data-close="driveModal">&times;</span>
             <h2 style="margin-bottom: 15px;">Schedule Community Blood Drive</h2>
-            <form id="formBloodDrive" class="grid-form-container">
-                <div class="form-group full-width"><label>Event Name:</label><input type="text" id="driveEvent" class="form-control" required></div>
-                <div class="form-group full-width"><label>Location Venue:</label><input type="text" id="driveVenue" class="form-control" required></div>
+            <form id="formBloodDrive" class="grid-form-container" novalidate>
+                <div class="form-group full-width"><label>Event Name:</label><input type="text" id="driveEvent" class="form-control" required minlength="3" maxlength="100"></div>
+                <div class="form-group full-width"><label>Location Venue:</label><input type="text" id="driveVenue" class="form-control" required minlength="3" maxlength="150"></div>
                 <div class="form-group"><label>Schedule Date:</label><input type="date" id="driveDate" class="form-control" required></div>
                 <div class="form-group">
                     <label>Target Barangay:</label>
-                    <select id="driveBarangay" class="form-control">
-                        <option value="1">Apopong</option><option value="2">Baluan</option>
+                    <select id="driveBarangay" class="form-control" required>
+                        <option value="">Select Barangay</option>
+<option value="1">Apopong</option><option value="2">Baluan</option>
                         <option value="3">Bula</option><option value="4">Calumpang</option>
                         <option value="5">City Heights</option><option value="6">Labangal</option>
                         <option value="7">Lagao</option><option value="8">San Isidro</option>
@@ -844,11 +810,11 @@
         <div class="modal-content">
             <span class="close-btn" data-close="editUserModal">&times;</span>
             <h2 style="margin-bottom: 15px;">Edit User Account</h2>
-            <form id="formEditUser">
+            <form id="formEditUser" novalidate>
                 <input type="hidden" id="editUserId">
                 <div class="form-group full-width">
                     <label>Username:</label>
-                    <input type="text" id="editUserUsername" class="form-control" required>
+                    <input type="text" id="editUserUsername" class="form-control" required minlength="3" maxlength="30" pattern="[A-Za-z0-9._\-]+">
                 </div>
                 <div class="btn-center-wrapper full-width">
                     <button type="submit" class="btn-submit">Save Changes</button>
@@ -862,15 +828,16 @@
         <div class="modal-content">
             <span class="close-btn" data-close="editDriveModal">&times;</span>
             <h2 style="margin-bottom: 15px;">Update Blood Drive</h2>
-            <form id="formEditDrive" class="grid-form-container">
+            <form id="formEditDrive" class="grid-form-container" novalidate>
                 <input type="hidden" id="editDriveId">
-                <div class="form-group full-width"><label>Event Name:</label><input type="text" id="editDriveEvent" class="form-control" required></div>
-                <div class="form-group full-width"><label>Location Venue:</label><input type="text" id="editDriveVenue" class="form-control" required></div>
+                <div class="form-group full-width"><label>Event Name:</label><input type="text" id="editDriveEvent" class="form-control" required minlength="3" maxlength="100"></div>
+                <div class="form-group full-width"><label>Location Venue:</label><input type="text" id="editDriveVenue" class="form-control" required minlength="3" maxlength="150"></div>
                 <div class="form-group"><label>Schedule Date:</label><input type="date" id="editDriveDate" class="form-control" required></div>
                 <div class="form-group">
                     <label>Target Barangay:</label>
-                    <select id="editDriveBarangay" class="form-control">
-                        <option value="1">Apopong</option><option value="2">Baluan</option>
+                    <select id="editDriveBarangay" class="form-control" required>
+                        <option value="">Select Barangay</option>
+<option value="1">Apopong</option><option value="2">Baluan</option>
                         <option value="3">Bula</option><option value="4">Calumpang</option>
                         <option value="5">City Heights</option><option value="6">Labangal</option>
                         <option value="7">Lagao</option><option value="8">San Isidro</option>
@@ -878,8 +845,9 @@
                 </div>
                 <div class="form-group full-width">
                     <label>Status:</label>
-                    <select id="editDriveStatus" class="form-control">
-                        <option value="Scheduled">Scheduled</option>
+                    <select id="editDriveStatus" class="form-control" required>
+                        <option value="">Select Status</option>
+<option value="Scheduled">Scheduled</option>
                         <option value="Ongoing">Ongoing</option>
                         <option value="Completed">Completed</option>
                         <option value="Cancelled">Cancelled</option>
@@ -897,24 +865,25 @@
         <div class="modal-content modal-lg">
             <span class="close-btn" data-close="editDonorProfileModal">&times;</span>
             <h2 style="margin-bottom: 15px;">Update Personal Details</h2>
-            <form id="formEditDonorProfile" class="grid-form-container">
-                <div class="form-group"><label>First Name:</label><input type="text" id="editProfileFirName" class="form-control" required></div>
-                <div class="form-group"><label>Middle Name:</label><input type="text" id="editProfileMidName" class="form-control"></div>
-                <div class="form-group"><label>Last Name:</label><input type="text" id="editProfileLstName" class="form-control" required></div>
-                <div class="form-group"><label>Phone Number:</label><input type="text" id="editProfilePhone" class="form-control" required></div>
-                <div class="form-group"><label>Email:</label><input type="email" id="editProfileEmail" class="form-control" required></div>
-                <div class="form-group"><label>Address:</label><input type="text" id="editProfileAdd" class="form-control" required></div>
+            <form id="formEditDonorProfile" class="grid-form-container" novalidate>
+                <div class="form-group"><label>First Name:</label><input type="text" id="editProfileFirName" class="form-control" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+"></div>
+                <div class="form-group"><label>Middle Name:</label><input type="text" id="editProfileMidName" class="form-control" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+"></div>
+                <div class="form-group"><label>Last Name:</label><input type="text" id="editProfileLstName" class="form-control" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+"></div>
+                <div class="form-group"><label>Phone Number:</label><input type="text" id="editProfilePhone" class="form-control" value="+63" required type="tel" minlength="13" maxlength="13" pattern="\+63[0-9]{10}" inputmode="numeric" autocomplete="tel"></div>
+                <div class="form-group"><label>Email:</label><input type="email" id="editProfileEmail" class="form-control" required type="email" maxlength="120" pattern="[A-Za-z0-9._%+\-]+@gmail\.com"></div>
+                <div class="form-group"><label>Address:</label><input type="text" id="editProfileAdd" class="form-control" required minlength="5" maxlength="200"></div>
                 <div class="form-group">
                     <label>Barangay:</label>
-                    <select id="editProfileBarangay" class="form-control">
-                        <option value="1">Apopong</option><option value="2">Baluan</option>
+                    <select id="editProfileBarangay" class="form-control" required>
+                        <option value="">Select Barangay</option>
+<option value="1">Apopong</option><option value="2">Baluan</option>
                         <option value="3">Bula</option><option value="4">Calumpang</option>
                         <option value="5">City Heights</option><option value="6">Labangal</option>
                         <option value="7">Lagao</option><option value="8">San Isidro</option>
                     </select>
                 </div>
-                <div class="form-group"><label>City:</label><input type="text" id="editProfileCity" class="form-control" required></div>
-                <div class="form-group"><label>Region:</label><input type="text" id="editProfileRegion" class="form-control" required></div>
+                <div class="form-group"><label>City:</label><input type="text" id="editProfileCity" class="form-control" required minlength="2" maxlength="80"></div>
+                <div class="form-group"><label>Region:</label><input type="text" id="editProfileRegion" class="form-control" required minlength="2" maxlength="100"></div>
                 <div class="btn-center-wrapper full-width">
                     <button type="submit" class="btn-submit">Update Profile</button>
                 </div>
@@ -922,6 +891,11 @@
         </div>
     </div>
 
-    <script src="js/script.js"></script>
+   <script src="js/script.js"></script>
+
+
+
+
+
 </body>
 </html>
