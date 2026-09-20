@@ -167,10 +167,21 @@
                                 <div class="card-header"><h4>System Status Overview</h4></div>
                                 <div class="card-body">
                                     <ul class="system-status-list">
-                                        <li><span>Database Connection:</span> <span class="badge badge-success">Active ('rexdb')</span></li>
+                                        <!-- [FINAL CHECK - FIXED] the database is called blood_donor_db (old text: Active ('rexdb')) -->
+                                        <li><span>Database Connection:</span> <span class="badge badge-success">Active ('blood_donor_db')</span></li>
                                         <li><span>Matching Engine:</span> <span class="badge badge-success">Online</span></li>
                                         <li><span>Pending Donor Verifications:</span> <span id="choPendingCount" class="badge badge-warning">0</span></li>
                                     </ul>
+                                </div>
+                            </div>
+                            <!-- [FINAL CHECK - MOVED] Saved records (Local Storage) - CHO Admin only -->
+                            <div id="settingsStorageCard" class="card entity-card" style="display: none;">
+                                <div class="card-header"><h4>Saved Records</h4></div>
+                                <div class="card-body">
+                                    <p class="settings-help">Every valid record you add is saved in this browser (Local Storage), so it is still here after you refresh the page.</p>
+                                    <p id="storageSummary" class="settings-account-summary" style="margin: 10px 0;"></p>
+                                    <p id="storageLastSaved" class="settings-help" style="margin-bottom: 10px;"></p>
+                                    <button type="button" id="btnResetSavedRecords" class="btn-sm btn-danger">Reset to Sample Data</button>
                                 </div>
                             </div>
                         </div>
@@ -577,15 +588,6 @@
                                 </div>
                                 <p class="settings-help full-width">Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.</p>
                             </form>
-
-                            <!-- [TASK 7 - ADDED] Saved records (Local Storage) - shown to CHO Admin only -->
-                            <div id="settingsStorageCard" class="settings-form" style="display: none;">
-                                <h3 style="margin-bottom: 8px;">Saved Records</h3>
-                                <p class="settings-help">Every valid record you add is saved in this browser (Local Storage), so it is still here after you refresh the page.</p>
-                                <p id="storageSummary" class="settings-account-summary" style="margin: 10px 0;"></p>
-                                <p id="storageLastSaved" class="settings-help" style="margin-bottom: 10px;"></p>
-                                <button type="button" id="btnResetSavedRecords" class="btn-sm btn-danger">Reset to Sample Data</button>
-                            </div>
                         </div>
                     </div>
                 </div>
