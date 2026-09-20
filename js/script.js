@@ -455,6 +455,7 @@ function initNavigationAndModals() {
                         status: "Active"
                     };
 
+                    syncLoggedInDonor(result); // [FINAL CHECK - ADDED] use the donor profile that came from the database
                     loginUserSuccess();
 
                 } else {
@@ -1039,8 +1040,8 @@ function buildSidebarMenu(roleId) {
         {
             id: "viewSettings",
             label: "Settings",
-            // roles: [4], // [FIXED - DISABLED] settings were donor-only
-            roles: [1, 2, 3, 4], // [FIXED] Settings now available to CHO Admin, Hospital Staff, BHW and Donor
+            // roles: [1, 2, 3, 4], // [DISABLED] Settings are for donors only
+            roles: [4], // [FINAL CHECK - FIXED] Settings (change username / password) are for Volunteer Blood Donors only
 
             icon: `
                 <svg
@@ -1115,23 +1116,23 @@ function switchModuleView(viewId) {
             "viewDrives",
             "viewUsers",
             "viewReports",
-            "viewManageNotifications",
-            "viewSettings" // [FIXED - ADDED] Settings for CHO Admin
+            "viewManageNotifications"
+            // "viewSettings" // [DISABLED] Settings are for donors only (CHO Admin)
         ],
 
         2: [
             "viewHome",
             "viewRequests",
-            "viewMatchedDonors",
-            "viewSettings" // [FIXED - ADDED] Settings for Hospital Staff
+            "viewMatchedDonors"
+            // "viewSettings" // [DISABLED] Settings are for donors only (Hospital Staff)
         ],
 
         3: [
             "viewHome",
             "viewDonors",
             "viewMatchedDonors",
-            "viewDrives",
-            "viewSettings" // [FIXED - ADDED] Settings for Brgy Health Worker
+            "viewDrives"
+            // "viewSettings" // [DISABLED] Settings are for donors only (Brgy Health Worker)
         ],
 
         4: [
@@ -6597,7 +6598,7 @@ function renderVolunteerSettings() {
 
     if (
         !db.currentUser ||
-        false /* [FIXED] settings now open to every role (was: db.currentUser.roleId !== 4) */
+        db.currentUser.roleId !== 4 /* [FINAL CHECK - FIXED] Settings are for donors only again */
     ) {
         return;
     }
@@ -6644,7 +6645,7 @@ function changeVolunteerUsername(
 
     if (
         !db.currentUser ||
-        false /* [FIXED] settings now open to every role (was: db.currentUser.roleId !== 4) */
+        db.currentUser.roleId !== 4 /* [FINAL CHECK - FIXED] Settings are for donors only again */
     ) {
 
         alert(
@@ -6815,7 +6816,7 @@ function changeVolunteerPassword(
 
     if (
         !db.currentUser ||
-        false /* [FIXED] settings now open to every role (was: db.currentUser.roleId !== 4) */
+        db.currentUser.roleId !== 4 /* [FINAL CHECK - FIXED] Settings are for donors only again */
     ) {
 
         alert(
@@ -8683,3 +8684,388 @@ function ensureCurrentUserListed() {
         status: "Active"
     });
 }
+
+
+// =========================================================
+// [FINAL CHECK - ADDED] FIXES FOUND WHILE CHECKING THE WHOLE SYSTEM
+// Nothing above this line was removed or changed in logic.
+// =========================================================
+
+// ---------------------------------------------------------
+// 1. MODULE TITLES: each page showed its title twice
+//    (the old code wrote the new title in front of the icon and
+//    left the old one behind it). Now there is one clean title.
+// ---------------------------------------------------------
+function fixModuleHeadings(roleId) {
+
+    const titles = [
+        [
+            "#viewDonors h2",
+            roleId === 3
+                ? "Donor Status"
+                : "Donor Records & Verification Status"
+        ],
+        [
+            "#viewMatchedDonors h2",
+            (roleId === 2 || roleId === 3)
+                ? "Qualified Donors"
+                : "Qualified Matched Donors Engine"
+        ],
+        ["#viewDrives h2", null],
+        ["#viewRequests h2", null]
+    ];
+
+    titles.forEach(([selector, title]) => {
+
+        const heading = document.querySelector(selector);
+
+        if (!heading) {
+            return;
+        }
+
+        const textNodes =
+            Array.from(heading.childNodes)
+                .filter(node => node.nodeType === Node.TEXT_NODE);
+
+        if (textNodes.length < 2) {
+            return;
+        }
+
+        const first = textNodes[0];
+        const last = textNodes[textNodes.length - 1];
+
+        // remove the duplicate title written in front of the icon
+        if (first.textContent.trim() !== "") {
+            first.textContent = " ";
+        }
+
+        if (title) {
+            last.textContent = " " + title + " ";
+        }
+    });
+}
+
+// ---------------------------------------------------------
+// 2. ROLE RULES FOR THE "ADD" FORMS
+//    Donors could see the "Schedule New Community Blood Drive" form.
+//    Only CHO Admin + Brgy Health Worker may schedule drives;
+//    only CHO Admin + Hospital Staff may add emergency requests.
+// ---------------------------------------------------------
+const FORM_PERMISSIONS = {
+    inlineDriveForm:      [1, 3],
+    formBloodDrive:       [1, 3],
+    formEditDrive:        [1, 3],
+    inlineRequestForm:    [1, 2],
+    formEmergencyRequest: [1, 2],
+    formEditRequest:      [1, 2],
+    formEditDonor:        [1, 3],
+    registerForm:         [1, 3],
+    formEditUser:         [1]
+};
+
+function applyRoleRulesToForms(roleId) {
+
+    const driveForm = document.getElementById("inlineDriveForm");
+
+    if (driveForm && driveForm.closest(".card")) {
+        driveForm.closest(".card").style.display =
+            FORM_PERMISSIONS.inlineDriveForm.includes(roleId) ? "" : "none";
+    }
+
+    const requestForm = document.getElementById("inlineRequestForm");
+
+    if (requestForm && requestForm.closest(".card")) {
+        requestForm.closest(".card").style.display =
+            FORM_PERMISSIONS.inlineRequestForm.includes(roleId) ? "" : "none";
+    }
+}
+
+const originalUpdateModuleHeadingsForRole = updateModuleHeadingsForRole;
+
+updateModuleHeadingsForRole = function (roleId) {
+
+    originalUpdateModuleHeadingsForRole.apply(this, arguments);
+
+    fixModuleHeadings(Number(roleId));
+
+    applyRoleRulesToForms(Number(roleId));
+};
+
+// second lock: even if someone forces a form to submit, the wrong role is stopped
+document.addEventListener(
+    "submit",
+    event => {
+
+        const id = event.target && event.target.id;
+
+        if (!FORM_PERMISSIONS[id]) {
+            return;
+        }
+
+        const roleId =
+            db.currentUser
+                ? Number(db.currentUser.roleId)
+                : 0;
+
+        if (!FORM_PERMISSIONS[id].includes(roleId)) {
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            alert("You do not have permission to do this.");
+        }
+    },
+    true
+);
+
+// ---------------------------------------------------------
+// 3. MANAGE NOTIFICATIONS: built from the real records
+//    (before it showed fixed text that never changed)
+// ---------------------------------------------------------
+const originalRenderAdminNotifications = renderAdminNotifications;
+
+renderAdminNotifications = function () {
+
+    originalRenderAdminNotifications.apply(this, arguments);
+
+    const container =
+        document.getElementById("adminNotificationsContainer");
+
+    if (!container) {
+        return;
+    }
+
+    const items = [];
+
+    db.requests
+        .filter(request => request.status === "Pending")
+        .forEach(request => {
+            items.push([
+                "New Emergency Request:",
+                `${request.quantity} bag(s) of ${getBloodTypeName(request.bloodTypeId)} blood requested by ${request.hospitalName} for ${request.patientName}.`
+            ]);
+        });
+
+    db.donors
+        .filter(donor => donor.verificationStatus === "Pending")
+        .forEach(donor => {
+            items.push([
+                "Pending Verification:",
+                `Donor ${getDonorName(donor)} requires verification.`
+            ]);
+        });
+
+    db.donations
+        .filter(donation => donation.status === "Awaiting Confirmation")
+        .forEach(donation => {
+
+            const donor =
+                db.donors.find(item => item.id === donation.donorId);
+
+            items.push([
+                "Donation Response:",
+                `${donor ? getDonorName(donor) : "A donor"} responded to emergency request #${donation.requestId} and is waiting for confirmation.`
+            ]);
+        });
+
+    const list = document.createElement("ul");
+    list.style.listStyle = "none";
+    list.style.padding = "0";
+
+    if (items.length === 0) {
+        items.push(["", "No new notifications."]);
+    }
+
+    items.forEach(([label, text]) => {
+
+        const row = document.createElement("li");
+        row.style.padding = "12px";
+        row.style.borderBottom = "1px solid var(--border-color)";
+
+        if (label) {
+            const strong = document.createElement("strong");
+            strong.textContent = label + " ";
+            row.appendChild(strong);
+        }
+
+        row.appendChild(document.createTextNode(text));
+        list.appendChild(row);
+    });
+
+    container.innerHTML = "";
+    container.appendChild(list);
+};
+
+// ---------------------------------------------------------
+// 4. DONOR LOGIN: show the donor's OWN profile
+//    login.php sends the donor's data from MySQL. Before, the portal
+//    looked for a matching sample donor and, if none matched, showed the
+//    first donor in the list (someone else's profile).
+// ---------------------------------------------------------
+function syncLoggedInDonor(result) {
+
+    if (
+        !result ||
+        Number(result.roleId) !== 4 ||
+        !result.donor
+    ) {
+        return;
+    }
+
+    const server = result.donor;
+    const userId = Number(result.id);
+    const email = String(server.Email || "").trim().toLowerCase();
+
+    // is this donor already in the local list? (same Gmail)
+    let donor =
+        email
+            ? db.donors.find(
+                item =>
+                    String(item.email || "").trim().toLowerCase() === email
+            )
+            : null;
+
+    // only ONE local donor may belong to this login
+    db.donors.forEach(item => {
+        if (item !== donor && item.userId === userId) {
+            item.userId = null;
+        }
+    });
+
+    if (!donor) {
+
+        const nextId =
+            db.donors.reduce(
+                (max, item) => Math.max(max, Number(item.id) || 0),
+                100
+            ) + 1;
+
+        donor = {
+            id: nextId,
+            userId: userId,
+            firstName: "",
+            middleName: "",
+            lastName: "",
+            sex: "",
+            birthDate: "",
+            phone: "",
+            email: "",
+            address: "",
+            barangayId: null,
+            city: "",
+            region: "",
+            bloodTypeId: null,
+            verificationStatus: "Pending",
+            availability: "Available"
+        };
+
+        db.donors.push(donor);
+    }
+
+    donor.userId = userId;
+
+    const copy = (target, value) => {
+        if (value !== undefined && value !== null && value !== "") {
+            donor[target] = value;
+        }
+    };
+
+    copy("firstName", server.FIR_name);
+    copy("middleName", server.MID_NAME);
+    copy("lastName", server.LST_name);
+    copy("sex", server.SEX);
+    copy("birthDate", server.BTH_DTE);
+    copy("phone", server.phone_number);
+    copy("email", server.Email);
+    copy("address", server.Address);
+    copy("city", server.city);
+    copy("region", server.region);
+    copy("verificationStatus", server.verificationStatus);
+    copy("availability", server.availability);
+
+    if (server.BARANGAY_BarangayID) {
+        donor.barangayId = Number(server.BARANGAY_BarangayID);
+    }
+
+    if (server.BLOOD_TYPE_BloodTypeID) {
+        donor.bloodTypeId = Number(server.BLOOD_TYPE_BloodTypeID);
+    }
+
+    saveRecords();
+}
+
+
+// =========================================================
+// [FINAL CHECK - ADDED] SETTINGS = VOLUNTEER BLOOD DONORS ONLY
+// (change username / change password / confirm new password)
+// =========================================================
+FORM_PERMISSIONS.formChangeUsername = [4];
+FORM_PERMISSIONS.formChangePassword = [4];
+
+// the "Saved Records" box now lives on the CHO Admin dashboard home
+const originalRenderHomeDashboardForUser = renderHomeDashboardForUser;
+
+renderHomeDashboardForUser = function () {
+
+    originalRenderHomeDashboardForUser.apply(this, arguments);
+
+    updateStorageCard();
+};
+
+
+// [FINAL CHECK - ADDED] Settings: show the "passwords do not match" error on the field itself
+// (red border + message), not only in a pop-up
+function checkPasswordConfirmMatch() {
+
+    const newPassword = document.getElementById("settingsNewPassword");
+    const confirmPassword = document.getElementById("settingsConfirmPassword");
+
+    if (!newPassword || !confirmPassword || confirmPassword.value === "") {
+        return;
+    }
+
+    if (confirmPassword.value !== newPassword.value) {
+
+        showValidationError(
+            confirmPassword,
+            "Passwords do not match. Type the same new password again."
+        );
+
+        return;
+    }
+
+    confirmPassword.classList.remove("input-invalid");
+    confirmPassword.classList.add("input-valid");
+
+    const message =
+        confirmPassword.parentElement
+            ? confirmPassword.parentElement.querySelector(".validation-message")
+            : null;
+
+    if (message) {
+        message.textContent = "";
+        message.classList.remove("show");
+    }
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        ["settingsNewPassword", "settingsConfirmPassword"].forEach(id => {
+
+            const field = document.getElementById(id);
+
+            if (field) {
+                field.addEventListener("input", checkPasswordConfirmMatch);
+                field.addEventListener("blur", checkPasswordConfirmMatch);
+            }
+        });
+
+        const form = document.getElementById("formChangePassword");
+
+        if (form) {
+            form.addEventListener("submit", checkPasswordConfirmMatch);
+        }
+    }
+);
