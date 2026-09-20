@@ -2880,6 +2880,12 @@ function renderDonorPortal() {
 function respondToEmergencyCall(
     donorId
 ) {
+    // [TASK 8 - ADDED] the emergency request may have been deleted
+    if (!db.requests.some(request => request.id === 501)) {
+        alert("This emergency request is no longer available.");
+        return;
+    }
+
 
     const donor =
         db.donors.find(
@@ -5422,9 +5428,20 @@ function emailExists(
             .toLowerCase();
 
 
+    // [TASK 8 - ADDED] when staff edit a donor, that donor's own email is not a duplicate
+    const editDonorModal = document.getElementById("editDonorModal");
+    const editDonorIdField = document.getElementById("editDonorId");
+    const ignoreDonorId =
+        editDonorModal &&
+        editDonorModal.style.display === "block" &&
+        editDonorIdField
+            ? parseInt(editDonorIdField.value)
+            : null;
+
     const donorExists =
         db.donors.some(
             donor =>
+                donor.id !== ignoreDonorId && // [TASK 8 - ADDED]
                 // [FIXED - ADDED] a donor updating their OWN profile must not be blocked by their own saved email
                 !(
                     db.currentUser &&
@@ -5509,7 +5526,7 @@ function getValidationMessage(
     // [FIXED - ADDED] clear message for the donor age limit
     if (
         field &&
-        field.id === "birthDate" &&
+        ["birthDate", "editDonorBirthDate"].includes(field.id) && // [TASK 8 - ADDED]
         (field.validity.rangeOverflow || field.validity.rangeUnderflow)
     ) {
         return "Donor must be 18 to 65 years old. Please check the birth date.";
@@ -5735,7 +5752,7 @@ function validateForm(
                     "lastName",
                     "editProfileFirName",
                     "editProfileMidName",
-                    "editProfileLstName"
+                    "editProfileLstName", "editDonorFirName", "editDonorMidName", "editDonorLstName"
                 ].includes(
                     field.id
                 )
@@ -5754,7 +5771,7 @@ function validateForm(
             } else if (
                 [
                     "phone",
-                    "editProfilePhone",
+                    "editProfilePhone", "editDonorPhone",
                     "selfDonorPhone",
                     "hospCttNumber",
                     "bhwCttNumber"
@@ -5775,7 +5792,7 @@ function validateForm(
             } else if (
                 [
                     "email",
-                    "editProfileEmail",
+                    "editProfileEmail", "editDonorEmail",
                     "selfDonorEmail"
                 ].includes(
                     field.id
@@ -6279,6 +6296,13 @@ function openEditDriveModal(
 
         dateField.value =
             drive.scheduleDate;
+    }
+
+    // [TASK 8 - ADDED] keep the original date valid even if it is already in the past
+    if (dateField) {
+        const todayText = new Date().toISOString().split("T")[0];
+        dateField.min =
+            drive.scheduleDate < todayText ? drive.scheduleDate : todayText;
     }
 
 
@@ -7047,7 +7071,7 @@ function setupNameValidation() {
 
         "editProfileFirName",
         "editProfileMidName",
-        "editProfileLstName",
+        "editProfileLstName", "editDonorFirName", "editDonorMidName", "editDonorLstName",
 
         "choFirName",
         "choLstName",
@@ -7146,7 +7170,7 @@ function setupPhoneValidation() {
     const phoneIds = [
 
         "phone",
-        "editProfilePhone",
+        "editProfilePhone", "editDonorPhone",
         "selfDonorPhone",
         "hospCttNumber",
         "bhwCttNumber"
@@ -7281,7 +7305,7 @@ function setupGmailValidation() {
     const emailIds = [
 
         "email",
-        "editProfileEmail",
+        "editProfileEmail", "editDonorEmail",
         "selfDonorEmail"
     ];
 
@@ -7359,16 +7383,16 @@ function initializeAllValidation() {
                         "lastName",
                         "editProfileFirName",
                         "editProfileMidName",
-                        "editProfileLstName",
+                        "editProfileLstName", "editDonorFirName", "editDonorMidName", "editDonorLstName",
 
                         "phone",
-                        "editProfilePhone",
+                        "editProfilePhone", "editDonorPhone",
                         "selfDonorPhone",
                         "hospCttNumber",
                         "bhwCttNumber",
 
                         "email",
-                        "editProfileEmail",
+                        "editProfileEmail", "editDonorEmail",
                         "selfDonorEmail"
                     ].includes(
                         field.id
@@ -7811,6 +7835,8 @@ const originalRefreshAllTables = refreshAllTables;
 
 refreshAllTables = function () {
 
+    ensureCurrentUserListed(); // [TASK 8 - ADDED] runs before the tables are drawn
+
     originalRefreshAllTables.apply(this, arguments);
 
     saveRecords();
@@ -7986,3 +8012,674 @@ document.addEventListener(
 
 // --- LOAD saved records as soon as the script starts (before anything is shown) ---
 loadRecords();
+
+
+// =========================================================
+// [TASK 8 - ADDED] RECORD EDITING AND DELETION (CRUD)
+// ---------------------------------------------------------
+// Adds an Edit and a Delete button to every record in the
+// Donor, Emergency Request, Blood Drive and User Account tables.
+// - Edit opens a modal filled with the record's current data and
+//   uses the same validation rules as Task 6.
+// - Delete asks for confirmation first.
+// - Every change refreshes the table and is saved to Local Storage.
+// Nothing above this line was removed or changed in logic.
+// =========================================================
+
+// which roles may edit/delete which records
+const CRUD_PERMISSIONS = {
+    donor:   [1, 3],   // CHO Admin, Brgy Health Worker
+    request: [1, 2],   // CHO Admin, Hospital Staff
+    drive:   [1, 3],   // CHO Admin, Brgy Health Worker
+    user:    [1]       // CHO Admin
+};
+
+function canManageRecord(type) {
+
+    return (
+        !!db.currentUser &&
+        CRUD_PERMISSIONS[type].includes(
+            Number(db.currentUser.roleId)
+        )
+    );
+}
+
+
+// small helpers
+function setFieldValue(id, value) {
+
+    const field = document.getElementById(id);
+
+    if (field) {
+        field.value =
+            value === undefined || value === null
+                ? ""
+                : value;
+    }
+}
+
+function getFieldValue(id) {
+
+    const field = document.getElementById(id);
+
+    return field ? field.value.trim() : "";
+}
+
+function clearFormValidation(form) {
+
+    if (!form) {
+        return;
+    }
+
+    form
+        .querySelectorAll(".input-invalid, .input-valid")
+        .forEach(field => {
+            field.classList.remove("input-invalid", "input-valid");
+        });
+
+    form
+        .querySelectorAll(".validation-message")
+        .forEach(message => {
+            message.textContent = "";
+            message.classList.remove("show");
+        });
+}
+
+function removeFromArray(array, matches) {
+
+    for (let i = array.length - 1; i >= 0; i--) {
+        if (matches(array[i])) {
+            array.splice(i, 1);
+        }
+    }
+}
+
+
+// ---------------------------------------------------------
+// 1. EDIT / DELETE BUTTONS IN EVERY TABLE ROW
+// ---------------------------------------------------------
+function addRowActions(tbodyId, type, editFunction) {
+
+    const tbody = document.getElementById(tbodyId);
+
+    if (!tbody || !canManageRecord(type)) {
+        return;
+    }
+
+    tbody.querySelectorAll("tr").forEach(row => {
+
+        const firstCell = row.querySelector("td");
+        const lastCell = row.querySelector("td:last-child");
+
+        if (!firstCell || !lastCell) {
+            return;
+        }
+
+        const id = parseInt(
+            firstCell.textContent.replace("#", "").trim()
+        );
+
+        if (isNaN(id) || lastCell.querySelector(".action-group")) {
+            return;
+        }
+
+        // keep the buttons that were already there (Verify, Find Matches, Edit ...)
+        const group = document.createElement("div");
+        group.className = "action-group";
+
+        while (lastCell.firstChild) {
+            group.appendChild(lastCell.firstChild);
+        }
+
+        const alreadyHasEdit =
+            Array.from(group.querySelectorAll("button"))
+                .some(button => button.textContent.trim() === "Edit");
+
+        if (!alreadyHasEdit) {
+
+            const editButton = document.createElement("button");
+            editButton.type = "button";
+            editButton.className = "btn-sm btn-secondary";
+            editButton.textContent = "Edit";
+            editButton.addEventListener("click", () => editFunction(id));
+            group.appendChild(editButton);
+        }
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "btn-sm btn-danger";
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", () => askDeleteRecord(type, id));
+        group.appendChild(deleteButton);
+
+        lastCell.appendChild(group);
+    });
+}
+
+const originalRenderDonorTable = renderDonorTable;
+
+renderDonorTable = function () {
+    originalRenderDonorTable.apply(this, arguments);
+    addRowActions("donorTableBody", "donor", openEditDonorModal);
+};
+
+const originalRenderRequestTable = renderRequestTable;
+
+renderRequestTable = function () {
+    originalRenderRequestTable.apply(this, arguments);
+    addRowActions("requestTableBody", "request", openEditRequestModal);
+};
+
+const originalRenderDriveTable = renderDriveTable;
+
+renderDriveTable = function () {
+    originalRenderDriveTable.apply(this, arguments);
+    addRowActions("driveTableBody", "drive", openEditDriveModal);
+};
+
+const originalRenderUserAccountTable = renderUserAccountTable;
+
+renderUserAccountTable = function () {
+    originalRenderUserAccountTable.apply(this, arguments);
+    addRowActions("userAccountTableBody", "user", openEditUserModal);
+};
+
+
+// after a change: refresh tables (this also saves to Local Storage)
+function refreshAfterRecordChange() {
+
+    refreshAllTables();
+
+    if (
+        db.currentUser &&
+        typeof renderHomeDashboardForUser === "function"
+    ) {
+        renderHomeDashboardForUser();
+    }
+}
+
+
+// ---------------------------------------------------------
+// 2. EDIT EMERGENCY REQUEST
+// ---------------------------------------------------------
+function openEditRequestModal(requestId) {
+
+    if (!canManageRecord("request")) {
+        alert("You do not have permission to edit emergency requests.");
+        return;
+    }
+
+    const request =
+        db.requests.find(
+            item => item.id === parseInt(requestId)
+        );
+
+    if (!request) {
+        return;
+    }
+
+    clearFormValidation(
+        document.getElementById("formEditRequest")
+    );
+
+    setFieldValue("editRequestId", request.id);
+    setFieldValue("editRequestPatient", request.patientName);
+    setFieldValue("editRequestBloodType", request.bloodTypeId);
+    setFieldValue("editRequestQty", request.quantity);
+    setFieldValue("editRequestDate", request.requestDate);
+    setFieldValue("editRequestStatus", request.status);
+
+    // an old request date must stay valid, but cannot move further into the past
+    const dateField = document.getElementById("editRequestDate");
+
+    if (dateField) {
+        const todayText = new Date().toISOString().split("T")[0];
+        dateField.min =
+            request.requestDate < todayText
+                ? request.requestDate
+                : todayText;
+    }
+
+    openModal("editRequestModal");
+}
+
+function submitEditRequest(event) {
+
+    event.preventDefault();
+
+    const form = event.target;
+
+    // same validation rules as Task 6
+    if (!validateForm(form)) {
+        return;
+    }
+
+    const request =
+        db.requests.find(
+            item => item.id === parseInt(getFieldValue("editRequestId"))
+        );
+
+    if (!request) {
+        alert("This request no longer exists.");
+        closeModal("editRequestModal");
+        refreshAfterRecordChange();
+        return;
+    }
+
+    request.patientName = getFieldValue("editRequestPatient");
+    request.bloodTypeId = parseInt(getFieldValue("editRequestBloodType"));
+    request.quantity = parseInt(getFieldValue("editRequestQty"));
+    request.requestDate = getFieldValue("editRequestDate");
+    request.status = getFieldValue("editRequestStatus");
+
+    closeModal("editRequestModal");
+
+    alert("Emergency request updated successfully!");
+
+    refreshAfterRecordChange();
+
+    // if the match list is showing this request, refresh it
+    const matchModule = document.getElementById("viewMatchedDonors");
+
+    if (
+        matchModule &&
+        matchModule.dataset.activeRequestId &&
+        parseInt(matchModule.dataset.activeRequestId) === request.id
+    ) {
+        renderMatchedDonors(request.id);
+    }
+}
+
+
+// ---------------------------------------------------------
+// 3. EDIT DONOR RECORD (staff)
+// ---------------------------------------------------------
+function openEditDonorModal(donorId) {
+
+    if (!canManageRecord("donor")) {
+        alert("You do not have permission to edit donor records.");
+        return;
+    }
+
+    const donor =
+        db.donors.find(
+            item => item.id === parseInt(donorId)
+        );
+
+    if (!donor) {
+        return;
+    }
+
+    clearFormValidation(
+        document.getElementById("formEditDonor")
+    );
+
+    setFieldValue("editDonorId", donor.id);
+    setFieldValue("editDonorFirName", donor.firstName);
+    setFieldValue("editDonorMidName", donor.middleName);
+    setFieldValue("editDonorLstName", donor.lastName);
+    setFieldValue("editDonorSex", donor.sex);
+    setFieldValue("editDonorBirthDate", donor.birthDate);
+    setFieldValue("editDonorBloodType", donor.bloodTypeId);
+    setFieldValue("editDonorEmail", donor.email);
+    setFieldValue("editDonorAdd", donor.address);
+    setFieldValue("editDonorBarangay", donor.barangayId);
+    setFieldValue("editDonorCity", donor.city);
+    setFieldValue("editDonorRegion", donor.region);
+
+    // phone: show it as +63XXXXXXXXXX
+    const phoneField = document.getElementById("editDonorPhone");
+
+    if (phoneField) {
+        phoneField.value = donor.phone || "+63";
+
+        if (typeof normalizePhilippinePhone === "function") {
+            normalizePhilippinePhone(phoneField);
+        }
+    }
+
+    openModal("editDonorModal");
+}
+
+function submitEditDonor(event) {
+
+    event.preventDefault();
+
+    const form = event.target;
+
+    // same validation rules as Task 6 (names, phone, Gmail, age, required fields)
+    if (!validateForm(form)) {
+        return;
+    }
+
+    const donor =
+        db.donors.find(
+            item => item.id === parseInt(getFieldValue("editDonorId"))
+        );
+
+    if (!donor) {
+        alert("This donor no longer exists.");
+        closeModal("editDonorModal");
+        refreshAfterRecordChange();
+        return;
+    }
+
+    donor.firstName = getFieldValue("editDonorFirName");
+    donor.middleName = getFieldValue("editDonorMidName");
+    donor.lastName = getFieldValue("editDonorLstName");
+    donor.sex = getFieldValue("editDonorSex");
+    donor.birthDate = getFieldValue("editDonorBirthDate");
+    donor.bloodTypeId = parseInt(getFieldValue("editDonorBloodType"));
+    donor.phone = getFieldValue("editDonorPhone");
+    donor.email = getFieldValue("editDonorEmail");
+    donor.address = getFieldValue("editDonorAdd");
+    donor.barangayId = parseInt(getFieldValue("editDonorBarangay"));
+    donor.city = getFieldValue("editDonorCity");
+    donor.region = getFieldValue("editDonorRegion");
+
+    closeModal("editDonorModal");
+
+    alert("Donor record updated successfully!");
+
+    refreshAfterRecordChange();
+}
+
+
+// ---------------------------------------------------------
+// 4. DELETE WITH CONFIRMATION
+// ---------------------------------------------------------
+let pendingDelete = null;
+
+function askDeleteRecord(type, id) {
+
+    if (!canManageRecord(type)) {
+        alert("You do not have permission to delete this record.");
+        return;
+    }
+
+    let title = "Delete Record";
+    let message = "";
+    let note = "";
+
+    if (type === "request") {
+
+        const request = db.requests.find(item => item.id === id);
+
+        if (!request) {
+            return;
+        }
+
+        title = "Delete Emergency Request";
+        message =
+            `Delete emergency request #${request.id} for patient "${request.patientName}"?`;
+        note = "Donor responses linked to this request will also be removed.";
+
+    } else if (type === "drive") {
+
+        const drive = db.drives.find(item => item.id === id);
+
+        if (!drive) {
+            return;
+        }
+
+        title = "Delete Blood Drive";
+        message =
+            `Delete the blood drive "${drive.eventName}" scheduled on ${drive.scheduleDate}?`;
+
+    } else if (type === "donor") {
+
+        const donor = db.donors.find(item => item.id === id);
+
+        if (!donor) {
+            return;
+        }
+
+        title = "Delete Donor Record";
+        message =
+            `Delete donor #${donor.id} - ${getDonorName(donor)}?`;
+        note = "The donor's login account and donation responses will also be removed from the list.";
+
+    } else if (type === "user") {
+
+        const user = db.users.find(item => item.id === id);
+
+        if (!user) {
+            return;
+        }
+
+        if (
+            db.currentUser &&
+            (user.id === db.currentUser.id ||
+                // [TASK 8 - FIXED] the login id comes from MySQL and can differ from the id in this list,
+                // so also compare the username
+                String(user.username).toLowerCase() ===
+                    String(db.currentUser.username || "").toLowerCase())
+        ) {
+            alert("You cannot delete the account you are logged in with.");
+            return;
+        }
+
+        // [TASK 8 - ADDED] always keep at least one City Health Office Admin account
+        if (
+            Number(user.roleId) === 1 &&
+            db.users.filter(item => Number(item.roleId) === 1).length <= 1
+        ) {
+            alert("You cannot delete the last City Health Office Admin account.");
+            return;
+        }
+
+        title = "Delete User Account";
+        message =
+            `Delete the user account "${user.username}" (${user.roleName})?`;
+        note = "A donor record linked to this account will be kept.";
+    }
+
+    pendingDelete = { type: type, id: id };
+
+    const titleElement = document.getElementById("confirmDeleteTitle");
+    const messageElement = document.getElementById("confirmDeleteMessage");
+    const noteElement = document.getElementById("confirmDeleteNote");
+
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
+
+    if (messageElement) {
+        messageElement.textContent = message;
+    }
+
+    if (noteElement) {
+        noteElement.textContent = note;
+        noteElement.style.display = note ? "block" : "none";
+    }
+
+    openModal("confirmDeleteModal");
+}
+
+function cancelDelete() {
+
+    pendingDelete = null;
+
+    closeModal("confirmDeleteModal");
+}
+
+function confirmDeleteNow() {
+
+    if (!pendingDelete) {
+        closeModal("confirmDeleteModal");
+        return;
+    }
+
+    const type = pendingDelete.type;
+    const id = pendingDelete.id;
+
+    pendingDelete = null;
+
+    // check the permission again before removing anything
+    if (!canManageRecord(type)) {
+        closeModal("confirmDeleteModal");
+        alert("You do not have permission to delete this record.");
+        return;
+    }
+
+    if (type === "request") {
+
+        removeFromArray(db.requests, item => item.id === id);
+        removeFromArray(db.donations, item => item.requestId === id);
+
+        // clear the match list if it was showing this request
+        const matchModule = document.getElementById("viewMatchedDonors");
+
+        if (
+            matchModule &&
+            matchModule.dataset.activeRequestId &&
+            parseInt(matchModule.dataset.activeRequestId) === id
+        ) {
+            delete matchModule.dataset.activeRequestId;
+
+            const matchBody =
+                document.getElementById("matchedDonorTableBody");
+
+            if (matchBody) {
+                matchBody.innerHTML = "";
+            }
+        }
+
+    } else if (type === "drive") {
+
+        removeFromArray(db.drives, item => item.id === id);
+
+    } else if (type === "donor") {
+
+        const donor = db.donors.find(item => item.id === id);
+
+        removeFromArray(db.donations, item => item.donorId === id);
+
+        if (donor && donor.userId !== null && donor.userId !== undefined) {
+            removeFromArray(
+                db.users,
+                item =>
+                    item.id === donor.userId &&
+                    Number(item.roleId) === 4
+            );
+        }
+
+        removeFromArray(db.donors, item => item.id === id);
+
+    } else if (type === "user") {
+
+        // keep the donor record, just unlink the account
+        db.donors.forEach(donor => {
+            if (donor.userId === id) {
+                donor.userId = null;
+            }
+        });
+
+        removeFromArray(db.users, item => item.id === id);
+    }
+
+    closeModal("confirmDeleteModal");
+
+    alert("Record deleted successfully.");
+
+    refreshAfterRecordChange();
+}
+
+
+// ---------------------------------------------------------
+// 5. CONNECT THE NEW FORMS AND BUTTONS
+// ---------------------------------------------------------
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const requestForm = document.getElementById("formEditRequest");
+
+        if (requestForm) {
+            requestForm.addEventListener("submit", submitEditRequest);
+        }
+
+        const donorForm = document.getElementById("formEditDonor");
+
+        if (donorForm) {
+            donorForm.addEventListener("submit", submitEditDonor);
+        }
+
+        const cancelButton = document.getElementById("btnCancelDelete");
+
+        if (cancelButton) {
+            cancelButton.addEventListener("click", cancelDelete);
+        }
+
+        const confirmButton = document.getElementById("btnConfirmDelete");
+
+        if (confirmButton) {
+            confirmButton.addEventListener("click", confirmDeleteNow);
+        }
+
+        // donor age limit for the staff Edit Donor form: 18 to 65 years old
+        const birthDate = document.getElementById("editDonorBirthDate");
+
+        if (birthDate) {
+
+            const youngest = new Date();
+            youngest.setFullYear(youngest.getFullYear() - 18);
+
+            const oldest = new Date();
+            oldest.setFullYear(oldest.getFullYear() - 65);
+
+            birthDate.max = youngest.toISOString().split("T")[0];
+            birthDate.min = oldest.toISOString().split("T")[0];
+        }
+    }
+);
+
+
+// [TASK 8 - ADDED] The account you are logged in with (CHO Admin, Hospital Staff, Brgy Worker)
+// must always appear in Manage User Accounts. If its row was deleted from the list earlier,
+// it is added back. (Logging in itself is checked by the database, so it was never lost.)
+function ensureCurrentUserListed() {
+
+    if (
+        !db.currentUser ||
+        ![1, 2, 3].includes(Number(db.currentUser.roleId)) ||
+        !db.currentUser.username
+    ) {
+        return;
+    }
+
+    const name =
+        String(db.currentUser.username).toLowerCase();
+
+    const listed =
+        db.users.some(
+            user =>
+                String(user.username).toLowerCase() === name
+        );
+
+    if (listed) {
+        return;
+    }
+
+    let newId = db.currentUser.id;
+
+    if (
+        newId === null ||
+        newId === undefined ||
+        db.users.some(user => user.id === newId)
+    ) {
+        newId =
+            db.users.reduce(
+                (max, user) => Math.max(max, Number(user.id) || 0),
+                100
+            ) + 1;
+    }
+
+    db.users.push({
+        id: newId,
+        username: db.currentUser.username,
+        roleId: Number(db.currentUser.roleId),
+        roleName: db.currentUser.roleName || "",
+        status: "Active"
+    });
+}
