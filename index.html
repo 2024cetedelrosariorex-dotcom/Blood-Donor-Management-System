@@ -900,6 +900,108 @@
         </div>
     </div>
 
+    <!-- [TASK 8 - ADDED] EDIT EMERGENCY REQUEST MODAL -->
+    <div id="editRequestModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-btn" data-close="editRequestModal">&times;</span>
+            <h2 style="margin-bottom: 15px;">Update Emergency Request</h2>
+            <form id="formEditRequest" class="grid-form-container" novalidate>
+                <input type="hidden" id="editRequestId">
+                <div class="form-group"><label>Patient Name:</label><input type="text" id="editRequestPatient" class="form-control" required minlength="2" maxlength="100" pattern="[A-Za-zÀ-ÿ .'\-]+"></div>
+                <div class="form-group">
+                    <label>Required Blood Type:</label>
+                    <select id="editRequestBloodType" class="form-control" required>
+                        <option value="">Select Blood Type</option>
+                        <option value="1">A+</option><option value="2">A-</option>
+                        <option value="3">B+</option><option value="4">B-</option>
+                        <option value="5">O+</option><option value="6">O-</option>
+                        <option value="7">AB+</option><option value="8">AB-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Quantity (Bags Needed):</label><input type="number" id="editRequestQty" class="form-control" min="1" max="20" step="1" required></div>
+                <div class="form-group"><label>Request Date:</label><input type="date" id="editRequestDate" class="form-control" required></div>
+                <div class="form-group full-width">
+                    <label>Status:</label>
+                    <select id="editRequestStatus" class="form-control" required>
+                        <option value="">Select Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Fulfilled">Fulfilled</option>
+                    </select>
+                </div>
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- [TASK 8 - ADDED] EDIT DONOR RECORD MODAL (staff) -->
+    <div id="editDonorModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-btn" data-close="editDonorModal">&times;</span>
+            <h2 style="margin-bottom: 15px;">Update Donor Record</h2>
+            <form id="formEditDonor" class="grid-form-container" novalidate>
+                <input type="hidden" id="editDonorId">
+                <div class="form-group"><label>First Name:</label><input type="text" id="editDonorFirName" class="form-control" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+"></div>
+                <div class="form-group"><label>Middle Name:</label><input type="text" id="editDonorMidName" class="form-control" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+"></div>
+                <div class="form-group"><label>Last Name:</label><input type="text" id="editDonorLstName" class="form-control" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+"></div>
+                <div class="form-group">
+                    <label>Sex:</label>
+                    <select id="editDonorSex" class="form-control" required>
+                        <option value="">Select Sex</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Birth Date:</label><input type="date" id="editDonorBirthDate" class="form-control" required></div>
+                <div class="form-group">
+                    <label>Blood Type:</label>
+                    <select id="editDonorBloodType" class="form-control" required>
+                        <option value="">Select Blood Type</option>
+                        <option value="1">A+</option><option value="2">A-</option>
+                        <option value="3">B+</option><option value="4">B-</option>
+                        <option value="5">O+</option><option value="6">O-</option>
+                        <option value="7">AB+</option><option value="8">AB-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Phone Number:</label><input type="text" id="editDonorPhone" class="form-control" value="+63" required minlength="13" maxlength="13" pattern="\+63[0-9]{10}" inputmode="numeric" autocomplete="tel"></div>
+                <div class="form-group"><label>Email:</label><input type="email" id="editDonorEmail" class="form-control" required maxlength="120" pattern="[A-Za-z0-9._%+\-]+@gmail\.com"></div>
+                <div class="form-group"><label>Address:</label><input type="text" id="editDonorAdd" class="form-control" required minlength="5" maxlength="200"></div>
+                <div class="form-group">
+                    <label>Barangay:</label>
+                    <select id="editDonorBarangay" class="form-control" required>
+                        <option value="">Select Barangay</option>
+                        <option value="1">Apopong</option><option value="2">Baluan</option>
+                        <option value="3">Bula</option><option value="4">Calumpang</option>
+                        <option value="5">City Heights</option><option value="6">Labangal</option>
+                        <option value="7">Lagao</option><option value="8">San Isidro</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>City:</label><input type="text" id="editDonorCity" class="form-control" required minlength="2" maxlength="80"></div>
+                <div class="form-group"><label>Region:</label><input type="text" id="editDonorRegion" class="form-control" required minlength="2" maxlength="100"></div>
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- [TASK 8 - ADDED] CONFIRM DELETE MODAL -->
+    <div id="confirmDeleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-close="confirmDeleteModal">&times;</span>
+            <h2 id="confirmDeleteTitle" style="margin-bottom: 12px;">Delete Record</h2>
+            <p id="confirmDeleteMessage" class="confirm-message"></p>
+            <p id="confirmDeleteNote" class="settings-help" style="display: none;"></p>
+            <p class="confirm-warning">This action cannot be undone.</p>
+            <div class="confirm-actions">
+                <button type="button" id="btnCancelDelete" class="btn-sm btn-secondary">Cancel</button>
+                <button type="button" id="btnConfirmDelete" class="btn-sm btn-danger">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+
    <script src="js/script.js"></script>
 
 
