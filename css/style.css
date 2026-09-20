@@ -1296,3 +1296,81 @@ label {
     grid-row: 2;
     grid-column: 1;
 }
+
+
+/* ==========================================================================
+   [TASK 8 - ADDED] EDIT / DELETE BUTTONS AND DELETE CONFIRMATION
+   ========================================================================== */
+.action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.btn-sm.btn-danger {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 6px;
+    box-shadow: none;
+    gap: 0;
+}
+
+.confirm-message {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    color: var(--ink);
+}
+
+.confirm-warning {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #b91c1c;
+    margin-top: 6px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.confirm-actions .btn-sm {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+
+/* [TASK 8 - ADDED] keep the sidebar its normal width; wide tables scroll inside their card
+   instead of squeezing the sidebar and pushing the page wider than the screen */
+.sidebar-nav {
+    flex-shrink: 0;
+}
+
+.main-content {
+    min-width: 0;
+}
+
+.action-group .btn-sm {
+    white-space: nowrap;
+}
+
+/* [TASK 8 - ADDED] on narrow screens the Edit/Delete column stays visible while the table scrolls sideways */
+table:has(#donorTableBody, #requestTableBody, #driveTableBody, #userAccountTableBody) th:last-child,
+table:has(#donorTableBody, #requestTableBody, #driveTableBody, #userAccountTableBody) td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    box-shadow: -8px 0 8px -8px rgba(15, 23, 42, 0.25);
+}
+
+table:has(#donorTableBody, #requestTableBody, #driveTableBody, #userAccountTableBody) td:last-child {
+    background: var(--white);
+}
+
+table:has(#donorTableBody, #requestTableBody, #driveTableBody, #userAccountTableBody) th:last-child {
+    background: #f8fafc;
+}
