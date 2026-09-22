@@ -636,126 +636,152 @@
         <div class="modal-content modal-lg">
             <span class="close-btn" data-close="registerModal">&times;</span>
             <h2 style="grid-column: 1 / -1; margin-bottom: 10px; color: var(--navy-dark);">Volunteer Blood Donor Registration</h2>
-            <p style="grid-column: 1 / -1; color: var(--ink-faint); margin-bottom: 12px;">Your login username and temporary password will be generated automatically and sent to the Gmail address you provide.</p>
+            <p style="grid-column: 1 / -1; color: var(--ink-faint); margin-bottom: 12px;">Type a username for the donor. A temporary password is generated automatically and sent to the Gmail address you provide.</p>
 
-            <form id="registerForm" class="grid-form-container" novalidate>
+            <!-- [REGISTER FORM - REDESIGNED] 3-column and 2-column rows, plus a Username field (the password is generated automatically) -->
+            <form id="registerForm" class="grid-form-container register-grid" novalidate>
 
-                <div class="form-group">
-                    <label for="firstName">First Name:</label>
-                    <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Enter first name" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+">
-                </div>
-                <div class="form-group">
-                    <label for="middleName">Middle Name:</label>
-                    <input type="text" id="middleName" name="middleName" class="form-control" placeholder="Enter middle name" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+">
+                <!-- Account type: plain text (the drop-down bar was removed; only donors can be registered here) -->
+                <div class="form-group span-6">
+                    <div class="account-type-text">Volunteer Blood Donor</div>
                 </div>
 
-                <div class="form-group">
-                    <label for="lastName">Last Name:</label>
-                    <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Enter last name" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+">
-                </div>
-                <div class="form-group">
-                    <label for="sex">Sex:</label>
-                    <select id="sex" name="sex" class="form-control" required>
-                        <option value="">Select Sex</option>
-<option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
+                <div class="form-group span-2">
+                                    <label for="firstName">First Name:</label>
+                                    <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Enter first name" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+">
+                                </div>
+
+                <div class="form-group span-2">
+                                    <label for="middleName">Middle Name:</label>
+                                    <input type="text" id="middleName" name="middleName" class="form-control" placeholder="Enter middle name" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+">
+                                </div>
+
+                <div class="form-group span-2">
+                                    <label for="lastName">Last Name:</label>
+                                    <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Enter last name" required minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ .'\-]+">
+                                </div>
+
+                <div class="form-group span-2">
+                                    <label for="sex">Sex:</label>
+                                    <select id="sex" name="sex" class="form-control" required>
+                                        <option value="">Select Sex</option>
+                <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+
+                <div class="form-group span-2">
+                                    <label for="birthDate">Birth Date:</label>
+                                    <input type="date" id="birthDate" name="birthDate" class="form-control" required>
+                                </div>
+
+                <div class="form-group span-2">
+                                    <label for="bloodType">Blood Type:</label>
+                                    <select id="bloodType" name="bloodType" class="form-control" required>
+                                        <option value="">Select Blood Type</option>
+                <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+
+                <div class="form-group span-3">
+                                    <label for="phone">Phone Number:</label>
+                                    <input type="tel" id="phone" name="phone" class="form-control" value="+63" required minlength="13" maxlength="13" pattern="\+63[0-9]{10}" inputmode="numeric" autocomplete="tel">
+                                </div>
+
+                <div class="form-group span-3">
+                                    <label for="email">Email:</label>
+                                    <input type="email" id="email" name="email" class="form-control" placeholder="example@gmail.com" required maxlength="120" pattern="[A-Za-z0-9.!#$%&'*+\/=?^_`\{\|\}~\-]+@gmail\.com">
+                                </div>
+
+                <!-- [REGISTER FORM - REMOVED] region field (the system is for General Santos City):
+                <div class="form-group span-3">
+                                    <label for="region">Region:</label>
+                                    <select id="region" name="region" class="form-control" required>
+                                        <option value="">Select Region</option>
+                                        <option value="National Capital Region (NCR)">National Capital Region (NCR)</option>
+                                        <option value="Cordillera Administrative Region (CAR)">Cordillera Administrative Region (CAR)</option>
+                                        <option value="Region I - Ilocos Region">Region I - Ilocos Region</option>
+                                        <option value="Region II - Cagayan Valley">Region II - Cagayan Valley</option>
+                                        <option value="Region III - Central Luzon">Region III - Central Luzon</option>
+                                        <option value="Region IV-A - CALABARZON">Region IV-A - CALABARZON</option>
+                                        <option value="MIMAROPA Region">MIMAROPA Region</option>
+                                        <option value="Region V - Bicol Region">Region V - Bicol Region</option>
+                                        <option value="Region VI - Western Visayas">Region VI - Western Visayas</option>
+                                        <option value="Negros Island Region (NIR)">Negros Island Region (NIR)</option>
+                                        <option value="Region VII - Central Visayas">Region VII - Central Visayas</option>
+                                        <option value="Region VIII - Eastern Visayas">Region VIII - Eastern Visayas</option>
+                                        <option value="Region IX - Zamboanga Peninsula">Region IX - Zamboanga Peninsula</option>
+                                        <option value="Region X - Northern Mindanao">Region X - Northern Mindanao</option>
+                                        <option value="Region XI - Davao Region">Region XI - Davao Region</option>
+                                        <option value="Region XII - SOCCSKSARGEN">Region XII - SOCCSKSARGEN</option>
+                                        <option value="Region XIII - Caraga">Region XIII - Caraga</option>
+                                        <option value="Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)">Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)</option>
+                                    </select>
+                                </div>
+                -->
+
+                <!-- [REGISTER FORM - REMOVED] city field (the system is for General Santos City):
+                <div class="form-group span-3">
+                                    <label for="city">City / Municipality:</label>
+                                    <select id="city" name="city" class="form-control" required disabled>
+                                        <option value="">Select City</option>
+                                    </select>
+                                </div>
+                -->
+
+                <div class="form-group span-3">
+                                    <label for="address">Address (House No. / Street):</label>
+                                    <input type="text" id="address" name="address" class="form-control" placeholder="Enter street address" required minlength="5" maxlength="200">
+                                </div>
+
+                <div class="form-group span-3">
+                                    <label for="barangay">Barangay:</label>
+                                    <select id="barangay" name="barangay" class="form-control" required>
+                                        <option value="">Select Barangay</option>
+                                        <option value="Apopong">Apopong</option>
+                                        <option value="Baluan">Baluan</option>
+                                        <option value="Bula">Bula</option>
+                                        <option value="Calumpang">Calumpang</option>
+                                        <option value="City Heights">City Heights</option>
+                                        <option value="Labangal">Labangal</option>
+                                        <option value="Lagao">Lagao</option>
+                                        <option value="San Isidro">San Isidro</option>
+                                        <option value="Buayan">Buayan</option>
+                                        <option value="Conel">Conel</option>
+                                        <option value="Dadiangas East">Dadiangas East</option>
+                                        <option value="Katangawan">Katangawan</option>
+                                        <option value="Ligaya">Ligaya</option>
+                                        <option value="Mabuhay">Mabuhay</option>
+                                        <option value="San Jose">San Jose</option>
+                                        <option value="Sinawal">Sinawal</option>
+                                        <option value="Tambler">Tambler</option>
+                                        <option value="Tinagacan">Tinagacan</option>
+                                        <option value="Siguel">Siguel / Bawing</option>
+                                        <option value="Upper Labay">Upper Labay</option>
+                                        <option value="Batomelong">Batomelong</option>
+                                        <option value="Dadiangas North">Dadiangas North</option>
+                                        <option value="Dadiangas South">Dadiangas South</option>
+                                        <option value="Dadiangas West">Dadiangas West</option>
+                                        <option value="Fatima">Fatima</option>
+                                        <option value="Olympog">Olympog</option>
+                                    </select>
+                                </div>
+
+                <hr class="register-divider">
+
+                <div class="form-group span-6">
+                    <label for="regUsername">Username:</label>
+                    <input type="text" id="regUsername" name="username" class="form-control" placeholder="e.g. juan.delacruz" required minlength="3" maxlength="30" pattern="[A-Za-z0-9._\-]+" autocomplete="off" autocapitalize="none" spellcheck="false">
+                    <small class="field-hint">3 to 30 characters: letters, numbers, dots, underscores or hyphens. The password is created automatically and sent to the donor's Gmail.</small>
                 </div>
 
-                <div class="form-group">
-                    <label for="birthDate">Birth Date:</label>
-                    <input type="date" id="birthDate" name="birthDate" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="bloodType">Blood Type:</label>
-                    <select id="bloodType" name="bloodType" class="form-control" required>
-                        <option value="">Select Blood Type</option>
-<option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="phone">Phone Number:</label>
-                    <input type="tel" id="phone" name="phone" class="form-control" value="+63" required minlength="13" maxlength="13" pattern="\+63[0-9]{10}" inputmode="numeric" autocomplete="tel">
-                </div>
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="example@gmail.com" required maxlength="120" pattern="[A-Za-z0-9.!#$%&'*+\/=?^_`\{\|\}~\-]+@gmail\.com">
-                </div>
-
-                <div class="form-group">
-                    <label for="address">Address (House No. / Street):</label>
-                    <input type="text" id="address" name="address" class="form-control" placeholder="Enter street address" required minlength="5" maxlength="200">
-                </div>
-                <div class="form-group">
-                    <label for="region">Region:</label>
-                    <select id="region" name="region" class="form-control" required>
-                        <option value="">Select Region</option>
-                        <option value="National Capital Region (NCR)">National Capital Region (NCR)</option>
-                        <option value="Cordillera Administrative Region (CAR)">Cordillera Administrative Region (CAR)</option>
-                        <option value="Region I - Ilocos Region">Region I - Ilocos Region</option>
-                        <option value="Region II - Cagayan Valley">Region II - Cagayan Valley</option>
-                        <option value="Region III - Central Luzon">Region III - Central Luzon</option>
-                        <option value="Region IV-A - CALABARZON">Region IV-A - CALABARZON</option>
-                        <option value="MIMAROPA Region">MIMAROPA Region</option>
-                        <option value="Region V - Bicol Region">Region V - Bicol Region</option>
-                        <option value="Region VI - Western Visayas">Region VI - Western Visayas</option>
-                        <option value="Negros Island Region (NIR)">Negros Island Region (NIR)</option>
-                        <option value="Region VII - Central Visayas">Region VII - Central Visayas</option>
-                        <option value="Region VIII - Eastern Visayas">Region VIII - Eastern Visayas</option>
-                        <option value="Region IX - Zamboanga Peninsula">Region IX - Zamboanga Peninsula</option>
-                        <option value="Region X - Northern Mindanao">Region X - Northern Mindanao</option>
-                        <option value="Region XI - Davao Region">Region XI - Davao Region</option>
-                        <option value="Region XII - SOCCSKSARGEN">Region XII - SOCCSKSARGEN</option>
-                        <option value="Region XIII - Caraga">Region XIII - Caraga</option>
-                        <option value="Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)">Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="city">City / Municipality:</label>
-                    <select id="city" name="city" class="form-control" required disabled>
-                        <option value="">Select City</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="barangay">Barangay:</label>
-                    <select id="barangay" name="barangay" class="form-control" required disabled>
-                        <option value="">Select Barangay</option>
-                        <option value="Apopong">Apopong</option>
-                        <option value="Baluan">Baluan</option>
-                        <option value="Bula">Bula</option>
-                        <option value="Calumpang">Calumpang</option>
-                        <option value="City Heights">City Heights</option>
-                        <option value="Labangal">Labangal</option>
-                        <option value="Lagao">Lagao</option>
-                        <option value="San Isidro">San Isidro</option>
-                        <option value="Buayan">Buayan</option>
-                        <option value="Conel">Conel</option>
-                        <option value="Dadiangas East">Dadiangas East</option>
-                        <option value="Katangawan">Katangawan</option>
-                        <option value="Ligaya">Ligaya</option>
-                        <option value="Mabuhay">Mabuhay</option>
-                        <option value="San Jose">San Jose</option>
-                        <option value="Sinawal">Sinawal</option>
-                        <option value="Tambler">Tambler</option>
-                        <option value="Tinagacan">Tinagacan</option>
-                        <option value="Siguel">Siguel / Bawing</option>
-                        <option value="Upper Labay">Upper Labay</option>
-                        <option value="Batomelong">Batomelong</option>
-                        <option value="Dadiangas North">Dadiangas North</option>
-                        <option value="Dadiangas South">Dadiangas South</option>
-                        <option value="Dadiangas West">Dadiangas West</option>
-                        <option value="Fatima">Fatima</option>
-                        <option value="Olympog">Olympog</option>
-                    </select>
-                </div>
                 <div class="btn-center-wrapper full-width">
                     <button type="submit" class="btn-submit">Submit Registration</button>
                 </div>
@@ -1002,6 +1028,25 @@
             </div>
         </div>
     </div>
+
+    <!-- [DONATION APPOINTMENT - ADDED] CONFIRM DONATION: SET WHERE / WHEN FOR THE DONOR -->
+    <div id="confirmDonationModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-btn" data-close="confirmDonationModal">&times;</span>
+            <h2 style="margin-bottom: 10px;">Confirm Donation Appointment</h2>
+            <p id="confirmDonationSummary" class="confirm-message"></p>
+            <form id="formConfirmDonation" class="grid-form-container" novalidate>
+                <input type="hidden" id="confirmDonationId">
+                <div class="form-group"><label>Appointment Date:</label><input type="date" id="confirmDonationDate" class="form-control" required></div>
+                <div class="form-group"><label>Appointment Time (8:00 AM - 5:00 PM):</label><input type="time" id="confirmDonationTime" class="form-control" required min="08:00" max="17:00"></div>
+                <div class="form-group full-width"><label>Instructions for the donor (optional):</label><input type="text" id="confirmDonationNote" class="form-control" maxlength="150" placeholder="Example: Go to the Blood Bank, 2nd floor."></div>
+                <div class="btn-center-wrapper full-width">
+                    <button type="submit" class="btn-submit">Confirm Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
 
    <script src="js/script.js"></script>
