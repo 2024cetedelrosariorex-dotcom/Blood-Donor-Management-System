@@ -1374,3 +1374,167 @@ table:has(#donorTableBody, #requestTableBody, #driveTableBody, #userAccountTable
 table:has(#donorTableBody, #requestTableBody, #driveTableBody, #userAccountTableBody) th:last-child {
     background: #f8fafc;
 }
+
+
+/* ==========================================================================
+   [FINAL CHECK - ADDED] ICONS INSIDE BUTTONS
+   The icons in the report buttons and toolbar buttons had no size, so they
+   showed as big black shapes.
+   ========================================================================== */
+.report-btn .icon,
+.btn-toolbar .icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.report-btn {
+    color: var(--ink);
+}
+
+.report-btn:hover {
+    background: #e2e8f0;
+}
+
+.btn-toolbar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+/* ==========================================================================
+   [EMERGENCY ALERTS - ADDED] red notice on the donor dashboard home
+   ========================================================================== */
+.donor-alert-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding: 14px 18px;
+    background: var(--light-red);
+    border-left: 4px solid var(--garnet);
+    border-radius: 8px;
+    color: var(--garnet);
+    font-weight: 600;
+    font-size: 0.92rem;
+}
+
+
+/* [DONATION APPOINTMENT - ADDED] green notice: the donor's donation is confirmed */
+.donor-alert-banner.donor-alert-banner--ok {
+    background: #ecfdf5;
+    border-left-color: #16a34a;
+    color: #166534;
+}
+
+
+/* ==========================================================================
+   [REGISTER FORM - REDESIGNED] Donor registration layout
+   Row 1: account type | Row 2: 3 name fields | Row 3: sex, birth date, blood type
+   Rows 4-6: 2 columns | Divider | Username
+   ========================================================================== */
+.register-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px 18px;
+}
+
+.register-grid .span-2 { grid-column: span 2; }
+.register-grid .span-3 { grid-column: span 3; }
+.register-grid .span-6 { grid-column: 1 / -1; }
+
+.register-grid label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink-soft, #475569);
+    margin-bottom: 6px;
+}
+
+.register-grid .form-control {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+}
+
+.register-grid select.form-control:disabled {
+    background: #f1f5f9;
+    color: var(--ink);
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+.register-divider {
+    grid-column: 1 / -1;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+    margin: 2px 0;
+}
+
+.field-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+}
+
+@media (max-width: 720px) {
+    .register-grid .span-2,
+    .register-grid .span-3 {
+        grid-column: 1 / -1;
+    }
+}
+
+.register-grid {
+    margin-top: 6px;
+}
+
+/* [REGISTER FORM - ADDED] account type shown as plain text */
+.account-type-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy-dark);
+    padding: 2px 0 0;
+}
+
+
+/* ==========================================================================
+   [DATABASE - ADDED] "Database: connected" label (bottom left)
+   ========================================================================== */
+.db-status-badge {
+    position: fixed;
+    left: 12px;
+    bottom: 12px;
+    z-index: 900;
+    display: none;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #334155;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+}
+
+.db-status-badge[data-state="connected"] {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.db-status-badge[data-state="saving"],
+.db-status-badge[data-state="connecting"] {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.db-status-badge[data-state="offline"] {
+    background: #fef3c7;
+    color: #92400e;
+}
