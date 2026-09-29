@@ -81,6 +81,7 @@ const db = {
             region: "Region XII (SOCCSKSARGEN)",
             bloodTypeId: 5,
             verificationStatus: "Verified",
+            emailVerified: true, // [EMAIL VERIFICATION - ADDED] sample donor accounts are treated as already confirmed
             availability: "Available"
         },
 
@@ -100,6 +101,7 @@ const db = {
             region: "Region XII (SOCCSKSARGEN)",
             bloodTypeId: 1,
             verificationStatus: "Pending",
+            emailVerified: true, // [EMAIL VERIFICATION - ADDED]
             availability: "Available"
         },
 
@@ -119,6 +121,7 @@ const db = {
             region: "Region XII (SOCCSKSARGEN)",
             bloodTypeId: 5,
             verificationStatus: "Verified",
+            emailVerified: true, // [EMAIL VERIFICATION - ADDED]
             availability: "Available"
         }
     ],
@@ -1923,6 +1926,10 @@ function renderDonorTable() {
                 </td>
 
                 <td>
+                    ${buildEmailVerificationCell(donor)}
+                </td>
+
+                <td>
                     <span
                         class="badge ${
                             donor.availability ===
@@ -1946,6 +1953,38 @@ function renderDonorTable() {
             );
         }
     );
+}
+
+
+// =========================================================
+// [EMAIL VERIFICATION - ADDED]
+// Small helper used only inside renderDonorTable() above, kept close to
+// the table so the row markup stays easy to read. The full feature
+// (sending the email, the Accept link, the donor-side banner, etc.) is
+// implemented further down in this file - see the
+// "DONOR EMAIL VERIFICATION" section near the end.
+// =========================================================
+function buildEmailVerificationCell(donor) {
+
+    const isVerified = !!donor.emailVerified;
+
+    const badge = `
+        <span class="badge ${isVerified ? "badge-success" : "badge-warning"}">
+            ${isVerified ? "Verified" : "Pending"}
+        </span>
+    `;
+
+    const canResend =
+        !isVerified &&
+        db.currentUser &&
+        (db.currentUser.roleId === 1 || db.currentUser.roleId === 3);
+
+    const resendBtn =
+        canResend
+            ? `<button type="button" class="btn-sm btn-secondary" style="margin-top:4px;" onclick="resendDonorVerificationEmail(${donor.id})">Resend Email</button>`
+            : "";
+
+    return `<div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">${badge}${resendBtn}</div>`;
 }
 
 
@@ -2801,6 +2840,23 @@ function renderDonorPortal() {
                     <span class="badge badge-success">
                         ${currentDonor.verificationStatus}
                     </span>
+                </div>
+
+
+                <div>
+                    <strong>
+                        Email Verification:
+                    </strong>
+
+                    <span class="badge ${currentDonor.emailVerified ? "badge-success" : "badge-warning"}">
+                        ${currentDonor.emailVerified ? "Verified" : "Pending"}
+                    </span>
+
+                    ${
+                        currentDonor.emailVerified
+                            ? ""
+                            : `<button type="button" class="btn-sm btn-secondary" style="margin-left:6px;" onclick="resendDonorVerificationEmail(${currentDonor.id})">Resend Verification Email</button>`
+                    }
                 </div>
 
 
@@ -7933,6 +7989,7 @@ function addRegisteredDonorToRecords(payload, result) {
         region: payload.region,
         bloodTypeId: bloodType ? bloodType.id : null,
         verificationStatus: "Pending",
+        emailVerified: false, // [EMAIL VERIFICATION - ADDED] a verification email is sent right after this record is created (see bottom of file)
         availability: "Available"
     });
 }
@@ -8999,6 +9056,11 @@ function syncLoggedInDonor(result) {
     copy("region", server.region);
     copy("verificationStatus", server.verificationStatus);
     copy("availability", server.availability);
+
+    // [EMAIL VERIFICATION - ADDED] login.php now returns this directly from
+    // the database, so always trust it (don't use copy(), which skips
+    // false/empty values - we want false to overwrite an old true too).
+    donor.emailVerified = !!server.emailVerified;
 
     if (server.BARANGAY_BarangayID) {
         donor.barangayId = Number(server.BARANGAY_BarangayID);
@@ -10710,6 +10772,15 @@ async function syncNow(initialize) {
             throw new Error(data && data.message ? data.message : "sync failed");
         }
 
+        // [DEBUG - TEMPORARY] make a save that reaches the server but changes nothing visible,
+        // so it can be reported without needing DevTools. Safe to remove once everything works.
+        if ((data.saved || 0) + (data.removed || 0) === 0 && result.count > 0) {
+            alert(
+                "DEBUG: the save reached the server, but the server did not change anything.\n\n" +
+                "Sent: " + JSON.stringify(result.changes).slice(0, 500)
+            );
+        }
+
         saveServerSnapshot(state);
         setDatabaseStatus("connected");
         return true;
@@ -10717,6 +10788,8 @@ async function syncNow(initialize) {
     } catch (error) {
 
         console.warn("Database sync failed:", error);
+        // [DEBUG - TEMPORARY] show the real error on screen. Safe to remove once everything works.
+        alert("DEBUG: the save failed. Server said:\n\n" + (error && error.message ? error.message : error));
         setDatabaseStatus("offline");
         return false;
 
@@ -11021,4 +11094,572 @@ resetSavedRecords = function () {
     fetch("api.php?action=reset", { credentials: "same-origin" })
         .then(finish)
         .catch(finish);
+};
+
+
+// ==========================================================================
+// [EMAIL VERIFICATION - ADDED]
+// ---------------------------------------------------------------------
+// What happens now:
+//   1. CHO/BHW registers a donor (registerForm) -> register_account.php
+//      creates the account, same as before.
+//   2. Right after that succeeds, this code calls send_verification_email.php
+//      (new PHP file) which emails the donor a link asking them to accept.
+//   3. The donor opens that link (it points back to this same index.html
+//      with ?verifyUser=...&verifyToken=... in the address bar). This file
+//      detects that on page load and shows an Accept / Not Now screen.
+//   4. "Accept & Verify" calls verify_email.php (new PHP file), which marks
+//      EmailVerified = 1 for that account in the USERS table.
+// The staff "Resend Email" buttons (donor table + donor's own profile) call
+// the same send_verification_email.php again.
+// Nothing above this line was removed or changed in logic.
+// ==========================================================================
+
+// --- small safe wrappers so a missing/renamed function never breaks this feature ---
+function saveRecordsSafely() {
+    try {
+        if (typeof saveRecords === "function") {
+            saveRecords();
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+}
+
+function refreshEverythingSafely() {
+
+    try {
+        if (typeof refreshAllTables === "function") {
+            refreshAllTables();
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+
+    try {
+        if (typeof renderDonorPortal === "function" && db.currentUser) {
+            renderDonorPortal();
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+}
+
+function findDonorRecordById(donorId) {
+    return db.donors.find(d => String(d.id) === String(donorId)) || null;
+}
+
+function findDonorRecordByDbUserId(userId) {
+    return db.donors.find(d => Number(d.dbUserId) === Number(userId)) || null;
+}
+
+
+// ---------------------------------------------------------------------
+// STEP 1: ask the server to send the verification email
+// donor must be a record from db.donors that has a real dbUserId (the
+// USERS.UserID created by register_account.php or by the donor's own
+// login). Sample/demo donors that were never really registered through
+// the form do not have one, so they are skipped with a friendly message.
+// ---------------------------------------------------------------------
+function sendDonorVerificationEmail(donor) {
+
+    if (!donor) {
+        return Promise.resolve(null);
+    }
+
+    if (!donor.dbUserId) {
+        alert(
+            "This donor record is not linked to a real database account yet, " +
+            "so no verification email can be sent for it."
+        );
+        return Promise.resolve(null);
+    }
+
+    return fetch("send_verification_email.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            userId: donor.dbUserId,
+            email: donor.email
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+
+        if (!result || !result.success) {
+
+            renderEmailVerificationErrorModal(
+                (result && result.message) ||
+                "The server could not start the verification email."
+            );
+
+            return result;
+        }
+
+        donor.emailVerified = false;
+        saveRecordsSafely();
+        refreshEverythingSafely();
+
+        renderEmailVerificationSentModal(donor, result.verifyLink, !!result.emailSent, result.mailError);
+
+        return result;
+    })
+    .catch(error => {
+
+        // send_verification_email.php could not be reached at all - most
+        // likely it has not been uploaded to the server yet.
+        console.warn("send_verification_email.php is not reachable:", error.message);
+
+        renderEmailVerificationErrorModal(
+            "Could not reach send_verification_email.php on the server. " +
+            "Make sure that file (and config/mail_config.php, config/mailer.php) " +
+            "has been uploaded next to register_account.php."
+        );
+
+        return null;
+    });
+}
+
+// "Resend Email" buttons (admin/BHW donor table + donor's own profile)
+function resendDonorVerificationEmail(donorId) {
+
+    const donor = findDonorRecordById(donorId);
+
+    if (!donor) {
+        alert("Donor record not found.");
+        return;
+    }
+
+    sendDonorVerificationEmail(donor);
+}
+
+
+// ---------------------------------------------------------------------
+// STEP 2: "verification email sent" screen (shown to the staff member,
+// or to the donor when they hit Resend themselves)
+// ---------------------------------------------------------------------
+function renderEmailVerificationSentModal(donor, verifyLink, emailSent, mailError) {
+
+    const body = document.getElementById("emailVerificationModalBody");
+
+    if (!body) {
+        return;
+    }
+
+    // [EMAIL VERIFICATION - CHANGED] when the email actually went out, keep
+    // this screen short and simple - just tell staff to have the donor
+    // check their Gmail. The link/testing tools are only shown as a
+    // fallback for the (rarer) case where the email could not be sent.
+    if (emailSent) {
+
+        body.innerHTML = `
+            <h2 style="margin-bottom:10px; color:var(--navy-dark);">Verification Email Sent</h2>
+
+            <p class="confirm-message">
+                A verification email was sent to <strong>${donor.email}</strong>.
+                Please ask the donor to check their Gmail inbox and click
+                <strong>Accept &amp; Verify</strong> to confirm their account.
+            </p>
+
+            <div class="confirm-actions">
+                <button type="button" class="btn-sm btn-success" onclick="closeModal('emailVerificationModal')">Got it</button>
+            </div>
+        `;
+
+        openModal("emailVerificationModal");
+        return;
+    }
+
+    body.innerHTML = `
+        <h2 style="margin-bottom:10px; color:var(--navy-dark);">Email Verification Sent</h2>
+
+        <p class="confirm-message">
+            The verification link was created, but the email to <strong>${donor.email}</strong> could not be
+            confirmed as delivered. Please share the link below with the donor.
+        </p>
+
+        ${
+            verifyLink
+                ? `
+                    <div class="verify-link-box">
+                        <code id="verifyLinkText">${verifyLink}</code>
+                        <button type="button" class="btn-sm btn-secondary" onclick="copyVerificationLink()">Copy Link</button>
+                    </div>
+
+                    <p class="settings-help">
+                        For testing: click "Open Verification Link Now" to see exactly what the donor will see
+                        when they open this link from their email.
+                    </p>
+                `
+                : ""
+        }
+
+        ${
+            mailError
+                ? `<p class="settings-help">Server note (for the developer/admin): ${mailError}</p>`
+                : ""
+        }
+
+        <div class="confirm-actions">
+            <button type="button" class="btn-sm btn-secondary" onclick="closeModal('emailVerificationModal')">Close</button>
+            ${
+                verifyLink
+                    ? `<button type="button" class="btn-sm btn-alert" onclick="openVerificationLinkNow('${verifyLink}')">Open Verification Link Now</button>`
+                    : ""
+            }
+        </div>
+    `;
+
+    openModal("emailVerificationModal");
+}
+
+function renderEmailVerificationErrorModal(message) {
+
+    const body = document.getElementById("emailVerificationModalBody");
+
+    if (!body) {
+        alert(message);
+        return;
+    }
+
+    body.innerHTML = `
+        <h2 style="margin-bottom:10px; color:#b91c1c;">Could Not Send Verification Email</h2>
+        <p class="confirm-message">${message}</p>
+        <div class="confirm-actions">
+            <button type="button" class="btn-sm btn-secondary" onclick="closeModal('emailVerificationModal')">Close</button>
+        </div>
+    `;
+
+    openModal("emailVerificationModal");
+}
+
+function copyVerificationLink() {
+
+    const el = document.getElementById("verifyLinkText");
+
+    if (!el) {
+        return;
+    }
+
+    const text = el.textContent;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+
+        navigator.clipboard.writeText(text).then(
+            () => alert("Verification link copied."),
+            () => alert("Could not copy automatically. Please select and copy the link manually.")
+        );
+
+    } else {
+        alert("Could not copy automatically. Please select and copy the link manually.");
+    }
+}
+
+// "Open Verification Link Now" (demo/testing button) - opens the exact
+// same link a real email would contain, in a new tab.
+function openVerificationLinkNow(verifyLink) {
+    window.open(verifyLink, "_blank");
+}
+
+
+// ---------------------------------------------------------------------
+// STEP 3: the donor's "Accept & Verify" screen - shown automatically
+// when the page loads with ?verifyUser=...&verifyToken=... in the
+// address bar, exactly like clicking the real link inside the email.
+// ---------------------------------------------------------------------
+// [EMAIL VERIFICATION - FIXED] holds the userId/token for whichever Accept
+// screen is currently open, so the Accept button never has to embed the
+// (long, quote-unsafe) token directly inside an onclick="..." attribute.
+let pendingEmailVerification = null;
+
+function renderEmailVerificationAcceptModal(userId, token) {
+
+    const body = document.getElementById("emailVerificationModalBody");
+
+    if (!body) {
+        return;
+    }
+
+    pendingEmailVerification = { userId: userId, token: token };
+
+    const localDonor = findDonorRecordByDbUserId(userId);
+
+    const whoText =
+        localDonor && localDonor.email
+            ? `using <strong>${maskEmailForDisplay(localDonor.email)}</strong>`
+            : "with this email address";
+
+    body.innerHTML = `
+        <h2 style="margin-bottom:10px; color:var(--navy-dark);">Confirm Your Email Address</h2>
+
+        <p class="confirm-message">
+            You registered as a Volunteer Blood Donor with the City Health Office Blood Emergency System
+            ${whoText}. Do you accept and confirm this email address?
+        </p>
+
+        <div class="confirm-actions">
+            <button type="button" class="btn-sm btn-secondary" onclick="declineEmailVerification()">Not Now</button>
+            <button type="button" class="btn-sm btn-success" onclick="acceptEmailVerification()">Accept &amp; Verify</button>
+        </div>
+    `;
+
+    openModal("emailVerificationModal");
+}
+
+function maskEmailForDisplay(email) {
+
+    const parts = String(email || "").split("@");
+
+    if (parts.length !== 2 || parts[0].length === 0) {
+        return email;
+    }
+
+    const name = parts[0];
+    const visible = name.slice(0, Math.min(2, name.length));
+
+    return visible + "*".repeat(Math.max(1, name.length - visible.length)) + "@" + parts[1];
+}
+
+function declineEmailVerification() {
+    pendingEmailVerification = null;
+    closeModal("emailVerificationModal");
+    clearVerificationParamsFromUrl();
+}
+
+// Accept button: calls verify_email.php on the server, which is the only
+// place the token is actually checked against the database.
+// [EMAIL VERIFICATION - FIXED] reads userId/token from pendingEmailVerification
+// (set by renderEmailVerificationAcceptModal) instead of taking them as
+// inline onclick arguments, since the token's characters could break out
+// of the onclick="..." attribute's quotes.
+function acceptEmailVerification() {
+
+    if (!pendingEmailVerification) {
+        return;
+    }
+
+    const userId = pendingEmailVerification.userId;
+    const token = pendingEmailVerification.token;
+
+    fetch("verify_email.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: userId, token: token })
+    })
+    .then(response => response.json())
+    .then(result => {
+
+        if (result && result.success) {
+
+            const localDonor = findDonorRecordByDbUserId(userId);
+
+            if (localDonor) {
+                localDonor.emailVerified = true;
+            }
+
+            saveRecordsSafely();
+            refreshEverythingSafely();
+        }
+
+        pendingEmailVerification = null;
+        renderEmailVerificationResultModal(!!(result && result.success), result);
+        clearVerificationParamsFromUrl();
+    })
+    .catch(error => {
+
+        console.warn("verify_email.php is not reachable:", error.message);
+
+        pendingEmailVerification = null;
+
+        renderEmailVerificationResultModal(false, {
+            message:
+                "Could not reach verify_email.php on the server. " +
+                "Make sure that file has been uploaded next to register_account.php."
+        });
+
+        clearVerificationParamsFromUrl();
+    });
+}
+
+function renderEmailVerificationResultModal(success, result) {
+
+    const body = document.getElementById("emailVerificationModalBody");
+
+    if (!body) {
+        return;
+    }
+
+    const donorName = (result && result.donorName) || "Your";
+    const message = result && result.message;
+
+    // [EMAIL VERIFICATION - CHANGED] the login credentials (username +
+    // temporary password) are generated and emailed only now, after
+    // acceptance - see verify_email.php. If that credentials email could
+    // not be sent, verify_email.php includes them in the response so they
+    // can still be shown here as a fallback (same idea as the existing
+    // registration fallback).
+    const credentialsEmailed = !!(result && result.credentialsEmailed);
+    const hasFallbackCredentials = !!(result && result.username && result.temporaryPassword);
+
+    body.innerHTML = success
+        ? `
+            <h2 style="margin-bottom:10px; color:#166534;">Email Verified</h2>
+            <p class="confirm-message">
+                Thank you, ${donorName}! Your email address is now verified.
+                ${
+                    credentialsEmailed
+                        ? "Your username and temporary password were just emailed to you - please check your Gmail inbox."
+                        : hasFallbackCredentials
+                            ? "Your login credentials could not be emailed automatically, so they are shown below instead:"
+                            : "You may now log in and start receiving emergency blood alerts."
+                }
+            </p>
+            ${
+                !credentialsEmailed && hasFallbackCredentials
+                    ? `
+                        <div class="verify-link-box">
+                            <code>Username: ${result.username} &nbsp;|&nbsp; Temporary Password: ${result.temporaryPassword}</code>
+                        </div>
+                    `
+                    : ""
+            }
+            <div class="confirm-actions">
+                <button type="button" class="btn-sm btn-success" onclick="closeModal('emailVerificationModal')">Done</button>
+            </div>
+        `
+        : `
+            <h2 style="margin-bottom:10px; color:#b91c1c;">Verification Failed</h2>
+            <p class="confirm-message">
+                ${message || "We could not verify this account. The link may have expired or already been used."}
+                Please ask the City Health Office or your Barangay Health Worker to resend the verification email.
+            </p>
+            <div class="confirm-actions">
+                <button type="button" class="btn-sm btn-secondary" onclick="closeModal('emailVerificationModal')">Close</button>
+            </div>
+        `;
+
+    openModal("emailVerificationModal");
+}
+
+function clearVerificationParamsFromUrl() {
+
+    try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("verifyUser");
+        url.searchParams.delete("verifyToken");
+        window.history.replaceState({}, document.title, url.toString());
+    } catch (error) {
+        // not critical - ignore
+    }
+}
+
+
+// ---------------------------------------------------------------------
+// Opens the Accept screen automatically when the page itself is loaded
+// with ?verifyUser=...&verifyToken=... in the address bar - this is the
+// link that send_verification_email.php emails to the donor.
+// ---------------------------------------------------------------------
+function checkEmailVerificationLinkOnLoad() {
+
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get("verifyUser");
+    const token = params.get("verifyToken");
+
+    if (!userId || !token) {
+        return;
+    }
+
+    renderEmailVerificationAcceptModal(userId, token);
+}
+
+document.addEventListener("DOMContentLoaded", checkEmailVerificationLinkOnLoad);
+
+
+// ---------------------------------------------------------------------
+// Automatically email the donor right after CHO/BHW successfully
+// registers them. addRegisteredDonorToRecords() is the function the
+// registerForm submit handler already calls once register_account.php
+// answers with success (see "REGISTER BLOOD DONOR" earlier in this file).
+// ---------------------------------------------------------------------
+const originalAddRegisteredDonorToRecordsForVerify = addRegisteredDonorToRecords;
+
+addRegisteredDonorToRecords = function (payload, result) {
+
+    originalAddRegisteredDonorToRecordsForVerify.apply(this, arguments);
+
+    if (!payload || !payload.email) {
+        return;
+    }
+
+    const email = String(payload.email).trim().toLowerCase();
+
+    const donor =
+        db.donors.find(
+            d => String(d.email || "").toLowerCase() === email
+        );
+
+    if (donor) {
+        sendDonorVerificationEmail(donor);
+    }
+};
+
+
+// ---------------------------------------------------------------------
+// Donor-side dashboard banner: "please verify your email"
+// Same pattern as updateDonorAlertBanner() above for emergency alerts.
+// ---------------------------------------------------------------------
+function updateDonorEmailVerifyBanner() {
+
+    const dashboard = document.getElementById("entityDashDonor");
+
+    if (!dashboard) {
+        return;
+    }
+
+    let banner = document.getElementById("donorEmailVerifyBanner");
+
+    if (!banner) {
+
+        banner = document.createElement("div");
+        banner.id = "donorEmailVerifyBanner";
+        banner.className = "donor-alert-banner donor-alert-banner--verify";
+
+        const hero = dashboard.querySelector(".donor-hero-card");
+
+        dashboard.insertBefore(banner, hero || null);
+    }
+
+    const donor = getLoggedInDonor();
+
+    if (!donor || donor.emailVerified) {
+        banner.style.display = "none";
+        return;
+    }
+
+    banner.style.display = "flex";
+    banner.innerHTML = "";
+
+    const message = document.createElement("span");
+    message.textContent = "Please verify your email address to keep receiving emergency blood alerts.";
+
+    const resend = document.createElement("button");
+    resend.type = "button";
+    resend.className = "btn-sm btn-secondary";
+    resend.textContent = "Resend Verification Email";
+    resend.addEventListener("click", () => resendDonorVerificationEmail(donor.id));
+
+    banner.append(message, resend);
+}
+
+const originalRenderHomeDashboardForEmailVerify = renderHomeDashboardForUser;
+
+renderHomeDashboardForUser = function () {
+
+    originalRenderHomeDashboardForEmailVerify.apply(this, arguments);
+
+    try {
+        updateDonorEmailVerifyBanner();
+    } catch (error) {
+        console.warn(error);
+    }
 };
