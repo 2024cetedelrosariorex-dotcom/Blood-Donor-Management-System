@@ -139,17 +139,12 @@ try {
 
     $donorId = (int)$pdo->lastInsertId();
 
-    $subject = 'City Blood Donor System - Your Login Credentials';
-    $message = "Hello {$firstName} {$lastName},\r\n\r\n"
-        . "Your Volunteer Blood Donor account has been successfully registered.\r\n\r\n"
-        . "Username: {$username}\r\n"
-        . "Temporary Password: {$temporaryPassword}\r\n\r\n"
-        . "Please log in and change your password in Account Settings.\r\n\r\n"
-        . "Thank you.";
-    $headers = "From: City Blood Donor System <noreply@localhost>\r\n"
-        . "Reply-To: noreply@localhost\r\n"
-        . "Content-Type: text/plain; charset=UTF-8";
-    $emailSent = function_exists('mail') ? @mail($email, $subject, $message, $headers) : false;
+    // [EMAIL VERIFICATION - CHANGED] The username/temporary password email is
+    // no longer sent here. It is sent later by verify_email.php, only after
+    // the donor has opened the verification link and clicked "Accept & Verify".
+    // A temporary password is still generated and hashed above so the account
+    // is fully usable in the database right away - it is just not emailed yet.
+    $emailSent = false;
 
     $pdo->commit();
 

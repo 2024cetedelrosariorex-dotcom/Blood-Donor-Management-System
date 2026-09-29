@@ -151,6 +151,23 @@ try {
         );
     }
 
+    // [EMAIL VERIFICATION - ADDED] Make sure USERS has the EmailVerified
+    // column too (the same self-healing pattern as the Email column right
+    // above - send_verification_email.php / verify_email.php add this
+    // column as well, this just makes login.php safe to run first).
+    $emailVerifiedColumn =
+        $pdo->query(
+            "SHOW COLUMNS FROM USERS LIKE 'EmailVerified'"
+        )->fetch(PDO::FETCH_ASSOC);
+
+    if (!$emailVerifiedColumn) {
+
+        $pdo->exec(
+            "ALTER TABLE USERS
+             ADD COLUMN EmailVerified TINYINT(1) NOT NULL DEFAULT 0"
+        );
+    }
+
     // Read login data.
     $rawInput =
         file_get_contents('php://input');
@@ -221,7 +238,8 @@ try {
             USERS.ROLES_RoleID,
             ROLES.RoleID,
             ROLES.RoleName,
-            USERS.Email
+            USERS.Email,
+            USERS.EmailVerified
         FROM USERS
         INNER JOIN ROLES
             ON USERS.ROLES_RoleID = ROLES.RoleID
@@ -260,6 +278,25 @@ try {
             'success' => false,
             'message' =>
                 'Incorrect password.'
+        ]);
+
+        exit;
+    }
+
+    // [EMAIL VERIFICATION - ADDED] Volunteer Blood Donor accounts (RoleID 4)
+    // cannot log in until they have accepted the verification email sent
+    // by send_verification_email.php / accepted through verify_email.php.
+    if (
+        (int)$user['RoleID'] === 4 &&
+        (int)($user['EmailVerified'] ?? 0) !== 1
+    ) {
+
+        echo json_encode([
+            'success' => false,
+            'message' =>
+                'Please verify your email before logging in. Check your Gmail inbox (' .
+                ($user['Email'] ?: 'the address used during registration') .
+                ') for the verification link, then try logging in again.'
         ]);
 
         exit;
@@ -311,6 +348,11 @@ try {
 
             $donor['verificationStatus'] =
                 'Verified';
+
+            // [EMAIL VERIFICATION - ADDED] so script.js can show the
+            // Email Verification badge correctly right after login too.
+            $donor['emailVerified'] =
+                (int)($user['EmailVerified'] ?? 0) === 1;
 
             $donor['availability'] =
                 'Available';
